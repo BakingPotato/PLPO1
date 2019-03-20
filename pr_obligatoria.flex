@@ -1,4 +1,5 @@
-import java_cup.runtime.*
+import java_cup.runtime.*;
+
 %%
 
 %class AnalizadorLexico
@@ -6,8 +7,8 @@ import java_cup.runtime.*
 %line
 %column
 %cup
-%state STRING
 
+%state STRING
 
 %{
       StringBuffer string = new StringBuffer();
@@ -19,16 +20,33 @@ import java_cup.runtime.*
         return new Symbol(type, yyline, yycolumn, value);
       }
 %}
+
 /* macros */
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+Alphabet = [a-z|A-z]
+Digit = [0-9]
+Digits = {Digit}+
+Underscore = "_"
+Sign = [+-]
+Exp = "e"|"E"
 
+NotBrace = [^"{"]
 
-letra = [a-zA-Z]
-signo = [+-]
-digitos = [0-9]+
-real = {digitos}"."{digitos}
+Identifier = ({Alphabet} | {Digit} | {Underscore})+
+
+Numeric_real_fixed_point_const = {Digits} "." {Digits}
+Numeric_real_exponential_const = {Digits} {Exp} {Sign}? {Digits}
+Numeric_real_mixed_const = {Numeric_real_fixed_point_const} {Exp} {Sign}? {Digits}
+
+Numeric_integer_const = {Sign}? {Digits}
+Numeric_real_const = {Numeric_real_fixed_point_const}
+                   | {Numeric_real_exponential_const}
+                   | {Numeric_real_mixed_const}
+
 StringCharacter = [^\r\n\'\\]
-SingleLineComment = "{" [^.] "}"  // No se si estos dos estan bien
-MultipleLineComment = "(*" [^"*)"] "*)"
+SingleLineComment = "{" [^}\r\n] ~"}"
+MultipleLineComment = "(*" [^*] ~"*)"
 
 %%
 
@@ -61,12 +79,13 @@ MultipleLineComment = "(*" [^"*)"] "*)"
 
 
 /* no se de expr regulares jeje revisen */
-{letra}[a-zA-Z0-9_]+	{ return symbol(sym.identifier); }
+{Identifier}	{ return symbol(sym.identifier); }
 
-{signo}?{digitos}		{ return symbol(sym.numeric_integer_const); }
+{Numeric_integer_const}		{ return symbol(sym.numeric_integer_const); }
 
-{signo}? ( {real} | {digitos}[eE]{signo}?{digitos} | {real}[eE]{signo}?{digitos} )
-	{ return symbol(sym.numeric_real_const); }
+{Numeric_real_const}        { return symbol(sym.numeric_real_const); }
+
+[^"*)"]
 
 "'"   { yybegin(STRING); string.setLength(0); }
 
