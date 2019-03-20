@@ -1,0 +1,86 @@
+//Codigo de usuario
+import java.cup.runtime.Symbol;
+
+parser code{:
+    public String resultado = new String();
+    public static LinkedList<TError> TablaES = new LinkedList<TError>();
+
+    public void syntax_error(Symbol s){
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+
+        System.out.println("Error sintactico recuperado");
+        System.out.println("\t\tLexema: "+lexema);
+        System.out.println("\t\tFila: "+fila);
+        System.out.println("\t\tColumna: "+columna);
+
+        TError datos = new TError(lexema, fila, columna, "Error Sintactico","Caracter no esperado");
+        TablaES.add(datos);
+    }
+
+        public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
+        {
+            String lexema = s.value.toString();
+            int fila = s.right;
+            int columna = s.left;
+
+            System.out.println("Error Sintactico, Modo Panico");
+            System.out.println("\t\tLexema: "+lexema);
+            System.out.println("\t\tFila: "+fila);
+            System.out.println("\t\tColumna: "+columna);
+
+            TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+            TablaES.add(datos);
+        }
+:}
+
+action code{:
+:}
+
+//DECLARACIONES
+terminal identifier, var, const_, integer, real, numeric_int_const, numeric_real_const, string_const, igual, op_mas, op_men, op_por, div, mod;
+terminal coma, punto, dos_puntos, punto_coma, igual, dos_p_igual, ab_parentesis, cr_parentesis, program, procedure, function, begin, end;
+
+non terminal PRG, BLQ;
+//Zona de declaraciones
+non terminal DCLIST, DCL, DEFCTE, CTELIST, SIMPVALUE, DEFVAR, DEFVARLIST, VARLIST, DEFPROC, DEFFUN, FORMAL_PARAMLIST, FORMAL_PARAM, TBAS;
+//Zona de sentencias
+non terminal SENTLIST, SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, EXPLIST, PROC_CALL;
+
+start with PRG;
+
+//REGLAS SEMANTICAS
+PRG ::= program identifier  punto_coma BLQ punto;
+
+BLQ ::= DCLLIST begin SENTLIST end;
+
+//Zona de declaraciones
+DCLLIST ::= DCLLIST DCL;
+
+DCL ::= DEFCTE | DEFVAR | DEFPROC | DEFFUN;
+DEFCTE ::= const CTELIST;
+CTELIST ::= identifier igual SIMPVALUE punto_coma| CTELIST identifier igual SIMPVALUE punto_coma;
+SIMPVALUE ::= numeric_integer_const | numeric_real_const| string_const;
+DEFVAR ::= var DEFVARLIST punto_coma;
+DEFVARLIST ::= VARLIST dos_puntos TBAS | DEFVARLIST punto_coma VARLIST dos_puntos TBAS;
+VARLIST ::= identifier | identifier coma VARLIST;
+DEFPROC ::=  procedure identifier FORMAL_PARAMLIST punto_coma BLQ punto_coma;
+DEFFUN ::=  function identifier FORMAL_PARAMLIST dos_puntos TBAS punto_coma BLQ punto_coma ;
+FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM cr_parentesis;
+FORMAL_PARAM ::= VARLIST dos_puntos TBAS| VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM;
+TBAS ::= integer | real;
+
+//Zona de sentencias
+SENTLIST ::= SENT | SENTLIST SENT;
+
+SENT ::= ASIG punto_coma | PROC_CALL punto_coma;
+ASIG ::= ID dos_p_igual EXP;
+ID ::= identifier;
+EXP ::= EXP OP EXP | FACTOR;
+OP ::= OPARIT;
+OPARIT ::= op_mas | op_men | op_por | div | mod;
+FACTOR ::= SIMPVALUE | ab_parentesis EXP cr_parentesis | identifier SUBPPARAMLIST;
+SUBPPARAMLIST ::= lambda | ab_parentesis EXPLIST cr_parentesis;
+EXPLIST ::= EXP | EXP coma EXPLIST;
+PROC_CALL ::= identifier SUBPPARAMLIST;
