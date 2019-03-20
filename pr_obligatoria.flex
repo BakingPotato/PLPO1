@@ -10,8 +10,9 @@ import java_cup.runtime.*;
 
 %state STRING
 
+/* Raw Java code */
 %{
-      StringBuffer string = new StringBuffer();
+      StringBuilder string = new StringBuilder();
 
       private Symbol symbol(int type) {
         return new Symbol(type, yyline, yycolumn);
@@ -21,7 +22,8 @@ import java_cup.runtime.*;
       }
 %}
 
-/* macros */
+/* Macros */
+
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 Alphabet = [a-z|A-z]
@@ -30,8 +32,6 @@ Digits = {Digit}+
 Underscore = "_"
 Sign = [+-]
 Exp = "e"|"E"
-
-NotBrace = [^"{"]
 
 Identifier = ({Alphabet} | {Digit} | {Underscore})+
 
@@ -75,37 +75,50 @@ MultipleLineComment = "(*" [^*] ~"*)"
 "div"       { return new symbol(sym.div); }    
 "mod"       { return new symbol(sym.mod); }
 
+"or"        { return new symbol(sym.or); }
+"and"       { return new symbol(sym.and); }
+"not"       { return new symbol(sym.not); }
+"<"         { return new symbol(sym.lt); }
+">"         { return new symbol(sym.gt); }
+"<="        { return new symbol(sym.let); }
+">="        { return new symbol(sym.bet); }
 
+"if"        { return new symbol(sym.if_); }
+"then"      { return new symbol(sym.then); }
+"else"      { return new symbol(sym.else_); }
+"while"     { return new symbol(sym.while_); }
+"do"        { return new symbol(sym.do_); }
+"repeat"    { return new symbol(sym.repeat); }
+"until"     { return new symbol(sym.until); }
+"to"        { return new symbol(sym.to); }
+"downto"    { return new symbol(sym.downto); }
 
+"unit"      { return new symbol(sym.unit); }
 
 /* no se de expr regulares jeje revisen */
-{Identifier}	{ return symbol(sym.identifier); }
+{Identifier}	                    { return symbol(sym.identifier, yytext()); }
+{Numeric_integer_const}		        { return symbol(sym.numeric_integer_const, new Integer(yytext())); }
+{Numeric_real_fixed_point_const}    { return symbol(sym.numeric_real_const, new Float(yytext())); }
+{Numeric_real_exponential_const}    { return symbol(sym.numeric_real_const, new Long(yytext())); }
+{Numeric_real_mixed_const}          { return symbol(sym.numeric_real_const, new Long(yytext())); }
+"'"                                 { yybegin(STRING); string.setLength(0); }
+// [^"*)"] esto se supone que va con algo
 
-{Numeric_integer_const}		{ return symbol(sym.numeric_integer_const); }
-
-{Numeric_real_const}        { return symbol(sym.numeric_real_const); }
-
-[^"*)"]
-
-"'"   { yybegin(STRING); string.setLength(0); }
-
-	
 <STRING> {
     
     /* Para que aparezca una comilla simple como contenido debe ir precedida de otra */
-    "''"    { string.append('''); }  //Esto esta bien?
+    "''"                { string.append("'"); }
     
-    "'"     { yybegin(YYINITIAL); return symbol(string_const, string.toString()); }
+    "'"                 { yybegin(YYINITIAL); return symbol(string_const, string.toString()); }
     
-    {StringCharacter}+  { string.append( yytext() );}
+    {StringCharacter}+  { string.append( yytext() ); }
     
     /* Error fin de linea (preguntar si hace falta) */
-    {LineTerminator} { throw new RuntimeException("Error lexico: salto de linea detectado en la constante literal de la linea " ++ (yyline+1) + " y columna " + (yycolumn+1)); }
+    {LineTerminator}    { throw new RuntimeException("Error lexico: salto de linea detectado en la constante literal de la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
     
 }
-    
 
 /* errorfallback */
-. | \n 	{ throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
+. | \n    { throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
 
-<<EOF>>     {return symbol(EOF);}  // Esto lo copie del example no se que es xd
+<<EOF>>   { return symbol(EOF); }  // Esto lo copie del example no se que es xd
