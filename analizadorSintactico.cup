@@ -1,11 +1,11 @@
-//Codigo de usuario
-import java.cup.runtime.Symbol;
+import java.cup.runtime.*;
 
-parser code{:
+/* User code */
+parser code{:   // hay que averiguar que hace
     public String resultado = new String();
     public static LinkedList<TError> TablaES = new LinkedList<TError>();
 
-    public void syntax_error(Symbol s){
+    public void syntax_error(Symbol s) {
         String lexema = s.value.toString();
         int fila = s.right;
         int columna = s.left;
@@ -19,68 +19,92 @@ parser code{:
         TablaES.add(datos);
     }
 
-        public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
-        {
-            String lexema = s.value.toString();
-            int fila = s.right;
-            int columna = s.left;
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
 
-            System.out.println("Error Sintactico, Modo Panico");
-            System.out.println("\t\tLexema: "+lexema);
-            System.out.println("\t\tFila: "+fila);
-            System.out.println("\t\tColumna: "+columna);
+        System.out.println("Error Sintactico, Modo Panico");
+        System.out.println("\t\tLexema: "+lexema);
+        System.out.println("\t\tFila: "+fila);
+        System.out.println("\t\tColumna: "+columna);
 
-            TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
-            TablaES.add(datos);
-        }
+        TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        TablaES.add(datos);
+    }
 :}
 
-action code{:
-:}
+action code{: :}
 
-//DECLARACIONES
-terminal identifier, var, const_, integer, real, numeric_int_const, numeric_real_const, string_const, igual, op_mas, op_men, op_por, div, mod;
-terminal coma, punto, dos_puntos, punto_coma, igual, dos_p_igual, ab_parentesis, cr_parentesis, program, procedure, function, begin, end;
+/* Terminales */
+terminal program, begin, end, const_, var, procedure, function, unit;
+terminal if_, then, else_, while_, do_, repeat, until, to, downto ,bucle_for;
+terminal integer, real, div, mod, or, and, not, lt, gt, let, bet;
+terminal igual, op_mas, op_men, op_mul, coma, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
+terminal String identifier, string_const;
+terminal Integer numeric_integer_const;
+terminal numeric_real_const;
 
-non terminal PRG, BLQ;
-//Zona de declaraciones
-non terminal DCLIST, DCL, DEFCTE, CTELIST, SIMPVALUE, DEFVAR, DEFVARLIST, VARLIST, DEFPROC, DEFFUN, FORMAL_PARAMLIST, FORMAL_PARAM, TBAS;
-//Zona de sentencias
-non terminal SENTLIST, SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, EXPLIST, PROC_CALL;
+/* No terminales */
+non terminal PRG, BLQ, DCLLIST, SENTLIST;
+non terminal DCL, DEFCTE, CTELIST, SIMPVALUE, DEFVAR, DEFVARLIST, VARLIST, DEFPROC, DEFFUN, FORMAL_PARAMLIST, FORMAL_PARAM, TBAS;
+non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, EXPLIST, PROC_CALL;
+non terminal EXPCOND, OPLOG, FACTORCOND, OPCOMP, INC;
 
+/* Precedences */
+precedence left lt, gt, let, bet;
+precedence left op_mas, op_men, or;
+precedence left op_mul, div, mod, and;
+precedence left not;
+
+/* Grammar */
 start with PRG;
 
-//REGLAS SEMANTICAS
-PRG ::= program identifier  punto_coma BLQ punto;
-
+PRG ::= program identifier punto_coma BLQ punto
+      | unit identifier punto_coma DCLLIST punto;           // Distinguir entre librerias y programas (opcional)
 BLQ ::= DCLLIST begin SENTLIST end;
+DCLLIST ::= empty | DCLLIST DCL; // creo que asi es como se representa lambda
+SENTLIST ::= SENT | SENTLIST SENT;
 
-//Zona de declaraciones
-DCLLIST ::= DCLLIST DCL;
-
+// Zona de declaraciones
 DCL ::= DEFCTE | DEFVAR | DEFPROC | DEFFUN;
-DEFCTE ::= const CTELIST;
-CTELIST ::= identifier igual SIMPVALUE punto_coma| CTELIST identifier igual SIMPVALUE punto_coma;
+DEFCTE ::= const_ CTELIST;
+CTELIST ::= identifier igual SIMPVALUE punto_coma
+          | CTELIST identifier igual SIMPVALUE punto_coma;
 SIMPVALUE ::= numeric_integer_const | numeric_real_const| string_const;
 DEFVAR ::= var DEFVARLIST punto_coma;
-DEFVARLIST ::= VARLIST dos_puntos TBAS | DEFVARLIST punto_coma VARLIST dos_puntos TBAS;
+DEFVARLIST ::= VARLIST dos_puntos TBAS
+             | DEFVARLIST punto_coma VARLIST dos_puntos TBAS;
 VARLIST ::= identifier | identifier coma VARLIST;
 DEFPROC ::=  procedure identifier FORMAL_PARAMLIST punto_coma BLQ punto_coma;
 DEFFUN ::=  function identifier FORMAL_PARAMLIST dos_puntos TBAS punto_coma BLQ punto_coma ;
 FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM cr_parentesis;
-FORMAL_PARAM ::= VARLIST dos_puntos TBAS| VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM;
+FORMAL_PARAM ::= VARLIST dos_puntos TBAS
+               | VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM
+               | empty; // creo que asi es como se representa lambda
 TBAS ::= integer | real;
 
-//Zona de sentencias
-SENTLIST ::= SENT | SENTLIST SENT;
-
-SENT ::= ASIG punto_coma | PROC_CALL punto_coma;
+// Zona de sentencias
+SENT ::= ASIG punto_coma | PROC_CALL punto_coma
+       | if_ EXPCOND then BLQ else_ BLQ                             // parte opcional
+       | while_ EXPCOND do_ BLQ                                     // parte opcional
+       | repeat BLQ until EXPCOND punto_coma                        // parte opcional
+       | bucle_for identifier dos_p_igual EXP INC EXP do_ BLQ;      // parte opcional
+INC ::= to | downto;                                                // parte opcional
 ASIG ::= ID dos_p_igual EXP;
 ID ::= identifier;
 EXP ::= EXP OP EXP | FACTOR;
 OP ::= OPARIT;
-OPARIT ::= op_mas | op_men | op_por | div | mod;
+OPARIT ::= op_mas | op_men | op_mul | div | mod;
 FACTOR ::= SIMPVALUE | ab_parentesis EXP cr_parentesis | identifier SUBPPARAMLIST;
-SUBPPARAMLIST ::= lambda | ab_parentesis EXPLIST cr_parentesis;
+SUBPPARAMLIST ::= lambda | ab_parentesis EXPLIST cr_parentesis; // pero claro entra en conflicto con este lambda
 EXPLIST ::= EXP | EXP coma EXPLIST;
 PROC_CALL ::= identifier SUBPPARAMLIST;
+
+// Comprobacion de expresiones condicionales (opcional)
+EXPCOND ::= EXPCOND OPLOG EXPCOND | FACTORCOND;
+OPTLOG ::= or | and;
+FACTORCOND ::= EXP OPCOMP EXP
+             | ab_parentesis EXP cr_parentesis
+             | not FACTORCOND;
+OPCOMP ::= lt | bg | let | bet | igual;

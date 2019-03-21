@@ -86,6 +86,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
 "if"        { return new symbol(sym.if_); }
 "then"      { return new symbol(sym.then); }
 "else"      { return new symbol(sym.else_); }
+"for"       { return new symbol(sym.bucle_for); }
 "while"     { return new symbol(sym.while_); }
 "do"        { return new symbol(sym.do_); }
 "repeat"    { return new symbol(sym.repeat); }
