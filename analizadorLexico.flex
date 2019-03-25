@@ -26,7 +26,7 @@ import java_cup.runtime.*;
 
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
-Alphabet = [a-z|A-z]
+Alphabet = [a-z|A-Z]
 Digit = [0-9]
 Digits = {Digit}+
 Underscore = "_"

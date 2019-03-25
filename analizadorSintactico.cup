@@ -63,7 +63,7 @@ start with PRG;
 PRG ::= program identifier punto_coma BLQ punto
       | unit identifier punto_coma DCLLIST punto;           // Distinguir entre librerias y programas (opcional)
 BLQ ::= DCLLIST begin SENTLIST end;
-DCLLIST ::= empty | DCLLIST DCL; // creo que asi es como se representa lambda
+DCLLIST ::= /* lambda */ | DCLLIST DCL;
 SENTLIST ::= SENT | SENTLIST SENT;
 
 // Zona de declaraciones
@@ -81,7 +81,7 @@ DEFFUN ::=  function identifier FORMAL_PARAMLIST dos_puntos TBAS punto_coma BLQ 
 FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM cr_parentesis;
 FORMAL_PARAM ::= VARLIST dos_puntos TBAS
                | VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM
-               | empty; // creo que asi es como se representa lambda
+               | /* lambda */;
 TBAS ::= integer | real;
 
 // Zona de sentencias
@@ -97,7 +97,7 @@ EXP ::= EXP OP EXP | FACTOR;
 OP ::= OPARIT;
 OPARIT ::= op_mas | op_men | op_mul | div | mod;
 FACTOR ::= SIMPVALUE | ab_parentesis EXP cr_parentesis | identifier SUBPPARAMLIST;
-SUBPPARAMLIST ::= lambda | ab_parentesis EXPLIST cr_parentesis; // pero claro entra en conflicto con este lambda
+SUBPPARAMLIST ::= /* lambda */ | ab_parentesis EXPLIST cr_parentesis;
 EXPLIST ::= EXP | EXP coma EXPLIST;
 PROC_CALL ::= identifier SUBPPARAMLIST;
 
