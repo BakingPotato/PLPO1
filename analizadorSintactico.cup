@@ -45,7 +45,7 @@ action code{:
 terminal program, begin, end, const_, var, procedure, function, unit;
 terminal if_, then, else_, while_, do_, repeat, until, to, downto ,bucle_for;
 terminal integer, real, div, mod, or, and, not, lt, gt, let, bet;
-terminal igual, op_mas, op_men, op_mul, coma, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
+terminal igual, op_mas, op_men, op_mul, coma, punto, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
 terminal String identifier, string_const;
 terminal Integer numeric_integer_const;
 terminal numeric_real_const;
@@ -140,7 +140,7 @@ FACTOR ::= SIMPVALUE {: reconocido("FACTOR"); :}
          | ab_parentesis EXP cr_parentesis {: reconocido("FACTOR"); :}
          | identifier SUBPPARAMLIST {: reconocido("FACTOR"); :} ;
 
-SUBPPARAMLIST ::= /* lambda */ {: reconocido("SUBPARAMLIST"); :}
+SUBPARAMLIST ::= /* lambda */ {: reconocido("SUBPARAMLIST"); :}
                 | ab_parentesis EXPLIST cr_parentesis {: reconocido("SUBPARAMLIST"); :} ;
 
 EXPLIST ::= EXP {: reconocido("EXPLIST"); :}
