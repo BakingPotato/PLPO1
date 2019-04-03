@@ -36,8 +36,8 @@ parser code{:   // hay que averiguar que hace
 :}
 
 action code{:
-     public void reconocido(String t, nt){
-            System.out.println("Se ha reconocido " + "\"" + t + "\"" + "como " + nt );
+     public void reconocido(String r){
+            System.out.println("Se ha reconocido " + "\"" + r + "\"");
         }
  :}
 
@@ -65,64 +65,102 @@ precedence left not;
 /* Grammar */
 start with PRG;
 
-PRG ::= program identifier punto_coma BLQ punto
-      | unit identifier punto_coma DCLLIST punto;           // Distinguir entre librerias y programas (opcional)
-BLQ ::= DCLLIST begin SENTLIST end;
+PRG ::= program identifier punto_coma BLQ punto  {: reconocido("PRG"); :}
+      | unit identifier punto_coma DCLLIST punto {: reconocido("PRG"); :} ;           // Distinguir entre librerias y programas (opcional)
+
+BLQ ::= DCLLIST begin SENTLIST end {: reconocido("BQL"); :} ;
+
 DCLLIST ::= /* lambda */ | DCLLIST DCL;
-SENTLIST ::= SENT | SENTLIST SENT;
+
+SENTLIST ::= SENT  {: reconocido("SENTLIST"); :}
+           | SENTLIST SENT {: reconocido("SENTLIST"); :} ;
 
 // Zona de declaraciones
-DCL ::= DEFCTE | DEFVAR | DEFPROC | DEFFUN;
-DEFCTE ::= const_ CTELIST;
-CTELIST ::= identifier igual SIMPVALUE punto_coma
-          | CTELIST identifier igual SIMPVALUE punto_coma;
-SIMPVALUE ::= numeric_integer_const {: reconocido("numeric_integer_const", "SIMPVALUE"); :}
-            | numeric_real_const    {: reconocido("numeric_integer_const", "SIMPVALUE"); :}
-            | string_const          {: reconocido("numeric_integer_const", "SIMPVALUE"); :};
-DEFVAR ::= var DEFVARLIST punto_coma;
-DEFVARLIST ::= VARLIST dos_puntos TBAS
-             | DEFVARLIST punto_coma VARLIST dos_puntos TBAS;
-VARLIST ::= identifier | identifier coma VARLIST;
-DEFPROC ::=  procedure identifier FORMAL_PARAMLIST punto_coma BLQ punto_coma;
-DEFFUN ::=  function identifier FORMAL_PARAMLIST dos_puntos TBAS punto_coma BLQ punto_coma ;
-FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM cr_parentesis;
-FORMAL_PARAM ::= VARLIST dos_puntos TBAS
-               | VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM
-               | /* lambda */;
-TBAS ::= integer  {: reconocido("integer", "TBAS"); :}
-       | real     {: reconocido("real", "TBAS"); :} ;
+DCL ::= DEFCTE  {: reconocido("DCL"); :}
+      | DEFVAR  {: reconocido("DCL"); :}
+      | DEFPROC {: reconocido("DCL"); :}
+      | DEFFUN  {: reconocido("DCL"); :}  ;
+
+DEFCTE ::= const_ CTELIST {: reconocido("DEFCTE"); :} ;
+
+CTELIST ::= identifier igual SIMPVALUE punto_coma {: reconocido("CTELIST"); :}
+          | CTELIST identifier igual SIMPVALUE punto_coma {: reconocido("CTELIST"); :} ;
+
+SIMPVALUE ::= numeric_integer_const {: reconocido("SIMPVALUE"); :}
+            | numeric_real_const    {: reconocido("SIMPVALUE"); :}
+            | string_const          {: reconocido("SIMPVALUE"); :};
+
+DEFVAR ::= var DEFVARLIST punto_coma {: reconocido("DEFVAR"); :} ;
+
+DEFVARLIST ::= VARLIST dos_puntos TBAS {: reconocido("DEFVARLIST"); :}
+             | DEFVARLIST punto_coma VARLIST dos_puntos TBAS {: reconocido("DEFVARLIST"); :} ;
+
+VARLIST ::= identifier | identifier coma VARLIST {: reconocido("VARLIST"); :} ;
+
+DEFPROC ::=  procedure identifier FORMAL_PARAMLIST punto_coma BLQ punto_coma {: reconocido("DEFPROC"); :} ;
+
+DEFFUN ::=  function identifier FORMAL_PARAMLIST dos_puntos TBAS punto_coma BLQ punto_coma  {: reconocido("DEFFUN"); :};
+
+FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM cr_parentesis {: reconocido("FORMAL_PARAMLIST"); :} ;
+
+FORMAL_PARAM ::= VARLIST dos_puntos TBAS {: reconocido("FORMAL_PARAM"); :}
+               | VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM {: reconocido("FORMAL_PARAM"); :}
+               | /* lambda */ {: reconocido("FORMAL_PARAM"); :};
+
+TBAS ::= integer  {: reconocido("TBAS"); :}
+       | real     {: reconocido("TBAS"); :} ;
 
 // Zona de sentencias
-SENT ::= ASIG punto_coma | PROC_CALL punto_coma
-       | if_ EXPCOND then BLQ else_ BLQ                             // parte opcional
-       | while_ EXPCOND do_ BLQ                                     // parte opcional
-       | repeat BLQ until EXPCOND punto_coma                        // parte opcional
-       | bucle_for identifier dos_p_igual EXP INC EXP do_ BLQ;      // parte opcional
-INC ::= to {: reconocido("to", "INC"); :}
-      | downto {: reconocido("downto", "INC"); :};                                                // parte opcional
-ASIG ::= ID dos_p_igual EXP;
-ID ::= identifier:i1 {: reconocido(i1, "identifier"); :};
-EXP ::= EXP OP EXP | FACTOR;
-OP ::= OPARIT;
+SENT ::= ASIG punto_coma  {: reconocido("SENT"); :}
+       | PROC_CALL punto_coma {: reconocido("SENT"); :}
+       | if_ EXPCOND then BLQ else_ BLQ {: reconocido("SENT"); :}                            // parte opcional
+       | while_ EXPCOND do_ BLQ  {: reconocido("SENT"); :}                                   // parte opcional
+       | repeat BLQ until EXPCOND punto_coma  {: reconocido("SENT"); :}                      // parte opcional
+       | bucle_for identifier dos_p_igual EXP INC EXP do_ BLQ  {: reconocido("SENT"); :} ;   // parte opcional
+
+INC ::= to {: reconocido("INC"); :}
+      | downto {: reconocido("INC"); :};                            // parte opcional
+
+ASIG ::= ID dos_p_igual EXP {: reconocido("ASIG"); :} ;
+
+ID ::= identifier:i1 {: reconocido("ID"); :};
+
+EXP ::= EXP OP EXP {: reconocido("EXP"); :}
+      | FACTOR {: reconocido("EXP"); :} ;
+
+OP ::= OPARIT {: reconocido("OP"); :};
+
 OPARIT ::= op_mas  {: reconocido("op_mas", "OPARIT"); :}
          | op_men  {: reconocido("op_men", "OPARIT"); :}
          | op_mul  {: reconocido("op_mul", "OPARIT"); :}
          | div     {: reconocido("op_div", "OPARIT"); :}
          | mod     {: reconocido("op_mod", "OPARIT"); :};
-FACTOR ::= SIMPVALUE | ab_parentesis EXP cr_parentesis | identifier SUBPPARAMLIST;
-SUBPPARAMLIST ::= /* lambda */ | ab_parentesis EXPLIST cr_parentesis;
-EXPLIST ::= EXP | EXP coma EXPLIST;
-PROC_CALL ::= identifier SUBPPARAMLIST;
+
+FACTOR ::= SIMPVALUE {: reconocido("FACTOR"); :}
+         | ab_parentesis EXP cr_parentesis {: reconocido("FACTOR"); :}
+         | identifier SUBPPARAMLIST {: reconocido("FACTOR"); :} ;
+
+SUBPPARAMLIST ::= /* lambda */ {: reconocido("SUBPARAMLIST"); :}
+                | ab_parentesis EXPLIST cr_parentesis {: reconocido("SUBPARAMLIST"); :} ;
+
+EXPLIST ::= EXP {: reconocido("EXPLIST"); :}
+          | EXP coma EXPLIST {: reconocido("EXPLIST"); :};
+
+PROC_CALL ::= identifier SUBPPARAMLIST {: reconocido("PROC_CALL"); :};
 
 // Comprobacion de expresiones condicionales (opcional)
-EXPCOND ::= EXPCOND OPLOG EXPCOND | FACTORCOND;
-OPTLOG ::= or  {: reconocido("or", "OPTLOG"); :}
-         | and {: reconocido("and", "OPTLOG"); :} ;
-FACTORCOND ::= EXP OPCOMP EXP
-             | ab_parentesis EXP cr_parentesis
-             | not FACTORCOND;
-OPCOMP ::= lt  {: reconocido("lt", "OPCOMP"); :}
-         | bg  {: reconocido("bg", "OPCOMP"); :}
-         | let {: reconocido("let", "OPCOMP"); :}
-         | bet {: reconocido("bet", "OPCOMP"); :}
-         | igual {: reconocido("igual", "OPCOMP"); :};
+EXPCOND ::= EXPCOND OPLOG EXPCOND {: reconocido("EXPCOND"); :}
+          | FACTORCOND {: reconocido("EXPCOND"); :} ;
+
+OPTLOG ::= or  {: reconocido("OPTLOG"); :}
+         | and {: reconocido("OPTLOG"); :} ;
+
+FACTORCOND ::= EXP OPCOMP EXP {: reconocido("FACTORCOND"); :}
+             | ab_parentesis EXP cr_parentesis {: reconocido("FACTORCOND"); :}
+             | not FACTORCOND {: reconocido("FACTORCOND"); :} ;
+
+OPCOMP ::= lt  {: reconocido("OPCOMP"); :}
+         | bg  {: reconocido("OPCOMP"); :}
+         | let {: reconocido("OPCOMP"); :}
+         | bet {: reconocido("OPCOMP"); :}
+         | igual {: reconocido("OPCOMP"); :};
