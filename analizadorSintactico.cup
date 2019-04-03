@@ -53,7 +53,7 @@ terminal numeric_real_const;
 /* No terminales */
 non terminal PRG, BLQ, DCLLIST, SENTLIST;
 non terminal DCL, DEFCTE, CTELIST, SIMPVALUE, DEFVAR, DEFVARLIST, VARLIST, DEFPROC, DEFFUN, FORMAL_PARAMLIST, FORMAL_PARAM, TBAS;
-non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, EXPLIST, PROC_CALL;
+non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, SUBPPARAMLIST, EXPLIST, PROC_CALL;
 non terminal EXPCOND, OPLOG, FACTORCOND, OPCOMP, INC;
 
 /* Precedences */
@@ -140,7 +140,7 @@ FACTOR ::= SIMPVALUE {: reconocido("FACTOR"); :}
          | ab_parentesis EXP cr_parentesis {: reconocido("FACTOR"); :}
          | identifier SUBPPARAMLIST {: reconocido("FACTOR"); :} ;
 
-SUBPARAMLIST ::= /* lambda */ {: reconocido("SUBPARAMLIST"); :}
+SUBPPARAMLIST ::= /* lambda */ {: reconocido("SUBPARAMLIST"); :}
                 | ab_parentesis EXPLIST cr_parentesis {: reconocido("SUBPARAMLIST"); :} ;
 
 EXPLIST ::= EXP {: reconocido("EXPLIST"); :}
