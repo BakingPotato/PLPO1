@@ -154,8 +154,8 @@ PROC_CALL ::= identifier SUBPPARAMLIST {: reconocido("PROC_CALL"); :};
 EXPCOND ::= EXPCOND OPLOG EXPCOND {: reconocido("EXPCOND"); :}
           | FACTORCOND {: reconocido("EXPCOND"); :} ;
 
-OPLOG ::= or  {: reconocido("OPTLOG"); :}
-         | and {: reconocido("OPTLOG"); :} ;
+OPLOG ::= or  {: reconocido("OPLOG"); :}
+         | and {: reconocido("OPLOG"); :} ;
 
 FACTORCOND ::= EXP OPCOMP EXP {: reconocido("FACTORCOND"); :}
              | ab_parentesis EXP cr_parentesis {: reconocido("FACTORCOND"); :}
