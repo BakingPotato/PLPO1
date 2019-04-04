@@ -1,6 +1,13 @@
 import java.cup.runtime.*;
+import java.util.LinkedList;
 
-/* User code */
+
+action code{:
+     public void reconocido(String r){
+            System.out.println("Se ha reconocido " + "\"" + r + "\"");
+        }
+ :}
+
 parser code{:   // hay que averiguar que hace
     public String resultado = new String();
     public static LinkedList<TError> TablaES = new LinkedList<TError>();
@@ -35,17 +42,12 @@ parser code{:   // hay que averiguar que hace
 
 :}
 
-action code{:
-     public void reconocido(String r){
-            System.out.println("Se ha reconocido " + "\"" + r + "\"");
-        }
- :}
 
 /* Terminales */
 terminal program, begin, end, const_, var, procedure, function, unit;
 terminal if_, then, else_, while_, do_, repeat, until, to, downto ,bucle_for;
 terminal integer, real, div, mod, or, and, not, lt, gt, let, bet;
-terminal igual, op_mas, op_men, op_mul, coma, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
+terminal igual, op_mas, op_men, op_mul, coma, punto, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
 terminal String identifier, string_const;
 terminal Integer numeric_integer_const;
 terminal numeric_real_const;
@@ -53,7 +55,7 @@ terminal numeric_real_const;
 /* No terminales */
 non terminal PRG, BLQ, DCLLIST, SENTLIST;
 non terminal DCL, DEFCTE, CTELIST, SIMPVALUE, DEFVAR, DEFVARLIST, VARLIST, DEFPROC, DEFFUN, FORMAL_PARAMLIST, FORMAL_PARAM, TBAS;
-non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, EXPLIST, PROC_CALL;
+non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPARAMLIST, SUBPPARAMLIST, EXPLIST, PROC_CALL;
 non terminal EXPCOND, OPLOG, FACTORCOND, OPCOMP, INC;
 
 /* Precedences */
@@ -152,7 +154,7 @@ PROC_CALL ::= identifier SUBPPARAMLIST {: reconocido("PROC_CALL"); :};
 EXPCOND ::= EXPCOND OPLOG EXPCOND {: reconocido("EXPCOND"); :}
           | FACTORCOND {: reconocido("EXPCOND"); :} ;
 
-OPTLOG ::= or  {: reconocido("OPTLOG"); :}
+OPLOG ::= or  {: reconocido("OPTLOG"); :}
          | and {: reconocido("OPTLOG"); :} ;
 
 FACTORCOND ::= EXP OPCOMP EXP {: reconocido("FACTORCOND"); :}
@@ -160,7 +162,7 @@ FACTORCOND ::= EXP OPCOMP EXP {: reconocido("FACTORCOND"); :}
              | not FACTORCOND {: reconocido("FACTORCOND"); :} ;
 
 OPCOMP ::= lt  {: reconocido("OPCOMP"); :}
-         | bg  {: reconocido("OPCOMP"); :}
+         | gt  {: reconocido("OPCOMP"); :}
          | let {: reconocido("OPCOMP"); :}
          | bet {: reconocido("OPCOMP"); :}
          | igual {: reconocido("OPCOMP"); :};

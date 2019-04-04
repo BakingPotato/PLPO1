@@ -8,7 +8,7 @@ import java_cup.runtime.*;
 %column
 %cup
 
-%state STRING
+%xstate STRING
 
 /* Raw Java code */
 %{
@@ -72,7 +72,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
 "function"  { return new symbol(sym.function); }
 "integer"   { return new symbol(sym.integer); }
 "real"      { return new symbol(sym.real); }
-"div"       { return new symbol(sym.div); }    
+"div"       { return new symbol(sym.div); }
 "mod"       { return new symbol(sym.mod); }
 
 "or"        { return new symbol(sym.or); }
@@ -106,20 +106,20 @@ MultipleLineComment = "(*" [^*] ~"*)"
 // [^"*)"] esto se supone que va con algo
 
 <STRING> {
-    
+
     /* Para que aparezca una comilla simple como contenido debe ir precedida de otra */
     "''"                { string.append("'"); }
-    
+
     "'"                 { yybegin(YYINITIAL); return symbol(string_const, string.toString()); }
-    
+
     {StringCharacter}+  { string.append( yytext() ); }
-    
+
     /* Error fin de linea (preguntar si hace falta) */
     {LineTerminator}    { throw new RuntimeException("Error lexico: salto de linea detectado en la constante literal de la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
-    
+
 }
 
 /* errorfallback */
-. | \n    { throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
+[^] | \n    { throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
 
 <<EOF>>   { return symbol(EOF); }  // Esto lo copie del example no se que es xd
