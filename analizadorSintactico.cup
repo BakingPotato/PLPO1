@@ -1,4 +1,4 @@
-import java.cup.runtime.*;
+import java_cup.runtime.*;
 import java.util.LinkedList;
 
 
@@ -102,11 +102,11 @@ EXP ::= EXP OP EXP {: reconocido("EXP"); :}
 
 OP ::= OPARIT {: reconocido("OP"); :};
 
-OPARIT ::= op_mas  {: reconocido("op_mas", "OPARIT"); :}
-         | op_men  {: reconocido("op_men", "OPARIT"); :}
-         | op_mul  {: reconocido("op_mul", "OPARIT"); :}
-         | div     {: reconocido("op_div", "OPARIT"); :}
-         | mod     {: reconocido("op_mod", "OPARIT"); :};
+OPARIT ::= op_mas  {: reconocido("OPARIT"); :}
+         | op_men  {: reconocido("OPARIT"); :}
+         | op_mul  {: reconocido("OPARIT"); :}
+         | div     {: reconocido("OPARIT"); :}
+         | mod     {: reconocido("OPARIT"); :};
 
 FACTOR ::= SIMPVALUE {: reconocido("FACTOR"); :}
          | ab_parentesis EXP cr_parentesis {: reconocido("FACTOR"); :}
