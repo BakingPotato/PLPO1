@@ -1,8 +1,10 @@
 import java_cup.runtime.*;
+import java_cup.sym;
 
 %%
 
 %class AnalizadorLexico
+%implements sym
 %unicode
 %line
 %column
@@ -52,49 +54,49 @@ MultipleLineComment = "(*" [^*] ~"*)"
 
 /* Simbolos terminales sencillos */
 
-"="			{ return new symbol(sym.igual); }
-"+"			{ return new symbol(sym.op_mas); }
-"-"			{ return new symbol(sym.op_men); }
-"*"			{ return new symbol(sym.op_mul); }
-","			{ return new symbol(sym.coma); }
-"."			{ return new symbol(sym.punto); }
-":"			{ return new symbol(sym.dos_puntos); }
-";"			{ return new symbol(sym.punto_coma); }
-":="        { return new symbol(sym.dos_p_igual); }
-"("         { return new symbol(sym.ab_parentesis); }
-")"         { return new symbol(sym.cr_parentesis); }
-"program"   { return new symbol(sym.program); }
-"begin"     { return new symbol(sym.begin); }
-"end"       { return new symbol(sym.end); }
-"const"     { return new symbol(sym.const_); }
-"var"       { return new symbol(sym.var); }
-"procedure" { return new symbol(sym.procedure); }
-"function"  { return new symbol(sym.function); }
-"integer"   { return new symbol(sym.integer); }
-"real"      { return new symbol(sym.real); }
-"div"       { return new symbol(sym.div); }
-"mod"       { return new symbol(sym.mod); }
+"="			{ return symbol(sym.igual); }
+"+"			{ return symbol(sym.op_mas); }
+"-"			{ return symbol(sym.op_men); }
+"*"			{ return symbol(sym.op_mul); }
+","			{ return symbol(sym.coma); }
+"."			{ return symbol(sym.punto); }
+":"			{ return symbol(sym.dos_puntos); }
+";"			{ return symbol(sym.punto_coma); }
+":="        { return symbol(sym.dos_p_igual); }
+"("         { return symbol(sym.ab_parentesis); }
+")"         { return symbol(sym.cr_parentesis); }
+"program"   { return symbol(sym.program); }
+"begin"     { return symbol(sym.begin); }
+"end"       { return symbol(sym.end); }
+"const"     { return symbol(sym.const_); }
+"var"       { return symbol(sym.var); }
+"PROCEDURE" { return symbol(sym.procedure); }
+"function"  { return symbol(sym.function); }
+"integer"   { return symbol(sym.integer); }
+"real"      { return symbol(sym.real); }
+"div"       { return symbol(sym.div); }
+"mod"       { return symbol(sym.mod); }
 
-"or"        { return new symbol(sym.or); }
-"and"       { return new symbol(sym.and); }
-"not"       { return new symbol(sym.not); }
-"<"         { return new symbol(sym.lt); }
-">"         { return new symbol(sym.gt); }
-"<="        { return new symbol(sym.let); }
-">="        { return new symbol(sym.bet); }
+"or"        { return symbol(sym.or); }
+"and"       { return symbol(sym.and); }
+"not"       { return symbol(sym.not); }
+"<"         { return symbol(sym.lt); }
+">"         { return symbol(sym.gt); }
+"<="        { return symbol(sym.let); }
+">="        { return symbol(sym.bet); }
 
-"if"        { return new symbol(sym.if_); }
-"then"      { return new symbol(sym.then); }
-"else"      { return new symbol(sym.else_); }
-"for"       { return new symbol(sym.bucle_for); }
-"while"     { return new symbol(sym.while_); }
-"do"        { return new symbol(sym.do_); }
-"repeat"    { return new symbol(sym.repeat); }
-"until"     { return new symbol(sym.until); }
-"to"        { return new symbol(sym.to); }
-"downto"    { return new symbol(sym.downto); }
+"if"        { return symbol(sym.if_); }
+"then"      { return symbol(sym.then); }
+"else"      { return symbol(sym.else_); }
+"for"       { return symbol(sym.bucle_for); }
+"while"     { return symbol(sym.while_); }
+"do"        { return symbol(sym.do_); }
+"repeat"    { return symbol(sym.repeat); }
+"until"     { return symbol(sym.until); }
+"to"        { return symbol(sym.to); }
+"downto"    { return symbol(sym.downto); }
 
-"unit"      { return new symbol(sym.unit); }
+"unit"      { return symbol(sym.unit); }
 
 /* no se de expr regulares jeje revisen */
 {Identifier}	                    { return symbol(sym.identifier, yytext()); }
@@ -104,6 +106,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
 {Numeric_real_mixed_const}          { return symbol(sym.numeric_real_const, new Long(yytext())); }
 "'"                                 { yybegin(STRING); string.setLength(0); }
 // [^"*)"] esto se supone que va con algo
+
 
 <STRING> {
 
