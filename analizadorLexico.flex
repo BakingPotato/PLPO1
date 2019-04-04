@@ -1,13 +1,12 @@
 import java_cup.runtime.*;
-import java_cup.sym;
 
 %%
 
 %class AnalizadorLexico
-%implements sym
 %unicode
 %line
 %column
+%cupsym sym
 %cup
 
 %xstate STRING

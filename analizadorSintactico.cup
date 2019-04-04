@@ -9,36 +9,6 @@ action code{:
  :}
 
 parser code{:   // hay que averiguar que hace
-    public String resultado = new String();
-    public static LinkedList<TError> TablaES = new LinkedList<TError>();
-
-    public void syntax_error(Symbol s) {
-        String lexema = s.value.toString();
-        int fila = s.right;
-        int columna = s.left;
-
-        System.out.println("Error sintactico recuperado");
-        System.out.println("\t\tLexema: "+lexema);
-        System.out.println("\t\tFila: "+fila);
-        System.out.println("\t\tColumna: "+columna);
-
-        TError datos = new TError(lexema, fila, columna, "Error Sintactico","Caracter no esperado");
-        TablaES.add(datos);
-    }
-
-    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
-        String lexema = s.value.toString();
-        int fila = s.right;
-        int columna = s.left;
-
-        System.out.println("Error Sintactico, Modo Panico");
-        System.out.println("\t\tLexema: "+lexema);
-        System.out.println("\t\tFila: "+fila);
-        System.out.println("\t\tColumna: "+columna);
-
-        TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
-        TablaES.add(datos);
-    }
 
 :}
 
