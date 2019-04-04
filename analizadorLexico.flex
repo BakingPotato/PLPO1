@@ -112,7 +112,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
     /* Para que aparezca una comilla simple como contenido debe ir precedida de otra */
     "''"                { string.append("'"); }
 
-    "'"                 { yybegin(YYINITIAL); return symbol(string_const, string.toString()); }
+    "'"                 { yybegin(YYINITIAL); return symbol(sym.string_const, string.toString()); }
 
     {StringCharacter}+  { string.append( yytext() ); }
 
@@ -123,5 +123,3 @@ MultipleLineComment = "(*" [^*] ~"*)"
 
 /* errorfallback */
 [^] | \n    { throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
-
-<<EOF>>   { return symbol(EOF); }  // Esto lo copie del example no se que es xd
