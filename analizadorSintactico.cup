@@ -58,9 +58,12 @@ DEFCTE ::= const_ CTELIST {: reconocido("DEFCTE"); :} ;
 CTELIST ::= identifier igual SIMPVALUE punto_coma {: reconocido("CTELIST"); :}
           | CTELIST identifier igual SIMPVALUE punto_coma {: reconocido("CTELIST"); :} ;
 
-SIMPVALUE ::= numeric_integer_const {: reconocido("SIMPVALUE"); :}
-            | numeric_real_const    {: reconocido("SIMPVALUE"); :}
-            | string_const          {: reconocido("SIMPVALUE"); :};
+SIMPVALUE ::= numeric_integer_const:i1
+                {: RESULT = n1; :}
+            | numeric_real_const:r1
+                {: RESULT = r1; :}
+            | string_const:s1
+                {: RESULT = s1; :} ;
 
 DEFVAR ::= var DEFVARLIST punto_coma {: reconocido("DEFVAR"); :} ;
 
@@ -95,7 +98,7 @@ INC ::= to {: reconocido("INC"); :}
 
 ASIG ::= ID dos_p_igual EXP {: reconocido("ASIG"); :} ;
 
-ID ::= identifier:i1 {: reconocido("ID"); :};
+ID ::= identifier:i1 {: RESULT = i1; :};
 
 EXP ::= EXP OP EXP {: reconocido("EXP"); :}
       | FACTOR {: reconocido("EXP"); :} ;
