@@ -2,15 +2,17 @@ import java_cup.runtime.*;
 import java.util.LinkedList;
 
 
-action code{:
-     public void reconocido(String r){
-            System.out.println("Se ha reconocido " + "\"" + r + "\"");
-        }
- :}
+parser code {:
 
-parser code{:   // hay que averiguar que hace
+public void syntax_error (Symbol s){
+	System.err.println("Error de sintaxis por el lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
+	System.err.println("Error recuperado");
+}
 
-:}
+public void unrecovered_syntax_error(Symbol s){
+	System.err.println("Error de sintaxis grave");
+}
+:};
 
 
 /* Terminales */
@@ -37,8 +39,16 @@ precedence left not;
 /* Grammar */
 start with PRG;
 
-PRG ::= program identifier punto_coma BLQ punto  {: reconocido("PRG"); :}
-      | unit identifier punto_coma DCLLIST punto {: reconocido("PRG"); :} ;           // Distinguir entre librerias y programas (opcional)
+PRG ::= program identifier:id punto_coma BLQ:blq punto  {:
+        Programa p = new Programa();
+        p.ident = id;
+        //Hay que hacer algo con punto_coma y punto
+        p.blq = blq;
+        Programa.generarFichero(p.imprimir().toString());
+        RESULT = p;
+    :}
+    | unit identifier punto_coma DCLLIST:dclist punto {::} ;
+        // Distinguir entre librerias y programas (opcional)
 
 BLQ ::= DCLLIST begin SENTLIST end {: reconocido("BQL"); :} ;
 
@@ -131,8 +141,34 @@ FACTORCOND ::= EXP OPCOMP EXP {: reconocido("FACTORCOND"); :}
              | ab_parentesis EXP cr_parentesis {: reconocido("FACTORCOND"); :}
              | not FACTORCOND {: reconocido("FACTORCOND"); :} ;
 
-OPCOMP ::= lt  {: reconocido("OPCOMP"); :}
-         | gt  {: reconocido("OPCOMP"); :}
-         | let {: reconocido("OPCOMP"); :}
-         | bet {: reconocido("OPCOMP"); :}
-         | igual {: reconocido("OPCOMP"); :};
+//Operaciones de comparacion
+OPCOMP ::= lt  {: //Menor que
+        Simbolo s = new Simbolo();
+        s.esOperacionC = true;
+        s.operacionC = " < ";
+        RESULT = s;
+    :}
+    | gt  {: //Mayor que
+        Simbolo s = new Simbolo();
+        s.esOperacionC = true;
+        s.operacionC = " > ";
+        RESULT = s;
+    :}
+    | let {: //Menor o igual que
+        Simbolo s = new Simbolo();
+        s.esOperacionC = true;
+        s.operacionC = " <= ";
+        RESULT = s;
+    :}
+    | bet {: //Mayor o igual que
+        Simbolo s = new Simbolo();
+        s.esOperacionC = true;
+        s.operacionC = " >= ";
+        RESULT = s;
+    :}
+    | igual {: //Igual que
+        Simbolo s = new Simbolo();
+        s.esOperacionC = true;
+        s.operacionC = " = ";
+        RESULT = s;
+    :};
