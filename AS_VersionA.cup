@@ -23,13 +23,13 @@ terminal Integer numeric_integer_const;
 terminal numeric_real_const;
 
 /* No terminales */
-non terminal PRG, BLQ, DCLLIST, SENTLIST;
-non terminal DCL, DEFCTE, SIMPVALUE, DEFVAR, DEFVARLIST;
-non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPPARAMLIST, EXPLIST, PROC_CALL;
-non terminal EXPCOND, OPLOG, FACTORCOND, OPCOMP, INC;
-non terminal DefineList DEFCTE, CTELIST;
-non terminal Funcion DEFFUN, DEFPROC, FORMAL_PARAMLIST, FORMAL_PARAM, VARLIST;
-non terminal Simbolo TBAS;
+non terminal PRG, BLQ, DCLLIST;
+non terminal DEFVARLIST;
+non terminal DefineList DCL, DEFCTE, CTELIST;
+non terminal Funcion DEFVAR, FORMAL_PARAM, VARLIST;
+non terminal Simbolo SIMPVALUE, TBAS, OP, OPARIT,  OPCOMP, OPLOG, INC, FACTORCOND, SUBPPARAMLIST, PROC_CALL;
+non terminal Sentencia SENT, SENTLIST, ID, ASIG, EXPCOND, EXP, EXPLIST, FACTOR;
+non terminal StringBuilder DEFFUN, DEFPROC, FORMAL_PARAMLIST;
 
 /* Precedences */
 precedence left lt, gt, let, bet;
@@ -45,7 +45,6 @@ PRG ::= program identifier punto_coma BLQ:b punto  {:
                 :}
       | unit identifier:id punto_coma DCLLIST:d punto {:
                 StringBuilder s = new StringBuilder("// Librería: ").append(id).append("\n").append(d);
-
                 :} ;           // Distinguir entre librerias y programas (opcional)
 
 BLQ ::= DCLLIST:d begin SENTLIST:s end {:
@@ -370,7 +369,7 @@ FACTORCOND ::= EXP:e1 OPCOMP:op EXP:e2 {:
     :}
     | ab_parentesis EXP:exp cr_parentesis {:
         Simbolo s = new Simbolo();
-        s.valor.append("(" + exp.valor + ")");
+        s.valor = new StringBuilder("(" + exp.valor + ")");
         RESULT = s;
     :}
     | not FACTORCOND:fc {:
