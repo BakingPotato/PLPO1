@@ -151,34 +151,34 @@ TBAS ::= integer  {: Simbolo s = new Simbolo();
 
 // Zona de sentencias
 SENT ::= ASIG:a punto_coma  {:
-        Sentencia sent = new Sentencia();
-        sent.valor.append(a.valor+";");
-        RESULT = sent;
+        Sentencia e = new Sentencia();
+        e.valor.append(a.valor+";");
+        RESULT = e;
     :}
     | PROC_CALL:pc punto_coma {:
-        Sentencia sent = new Sentencia();
-        sent.valor.append(pc.valor+";");
-        RESULT = sent;
+        Sentencia e = new Sentencia();
+        e.valor.append(pc.valor+";");
+        RESULT = e;
     :}
     | if_ EXPCOND:ec then BLQ:blq1 else_ BLQ:blq2 {:
-        Sentencia sent = new Sentencia();
-        sent.valor.append("if("+ec.valor+")"+blq1.valor+"else"+blq2.valor);
-        RESULT = sent;
+        Sentencia e = new Sentencia();
+        e.valor.append("if("+ec.valor+")"+blq1.valor+"else"+blq2.valor);
+        RESULT = e;
      :}
      | while_ EXPCOND:ec do_ BLQ:blq  {:
-        Sentencia sent = new Sentencia();
-        sent.valor.append("while("+ec.valor+")" +blq.valor);
-        RESULT = sent;
+        Sentencia e = new Sentencia();
+        e.valor.append("while("+ec.valor+")" +blq.valor);
+        RESULT = e;
      :}
      | repeat BLQ:blq until EXPCOND:ec punto_coma  {:
-        Sentencia sent = new Sentencia();
-        sent.valor.append("do"+blq.valor+"until("+ec.valor+")");
-        RESULT = sent;
+        Sentencia e = new Sentencia();
+        e.valor.append("do"+blq.valor+"until("+ec.valor+")");
+        RESULT = e;
      :}
      | bucle_for identifier:id dos_p_igual EXP:exp1 INC:inc EXP:exp2 do_ BLQ:blq  {:
-        Sentencia sent = new Sentencia();
-        sent.valor.append("for("+id.valor+"="+exp1.valor+"; "+exp1.valor+inc.valor+exp2.valor+"; "+id.valor+"="+id.valor+inc.signo+")"+blq.valor);
-        RESULT = sent;
+        Sentencia e = new Sentencia();
+        e.valor.append("for("+id.valor+"="+exp1.valor+"; "+exp1.valor+inc.valor+exp2.valor+"; "+id.valor+"="+id.valor+inc.signo+")"+blq.valor);
+        RESULT = e;
      :};
 
 INC ::= to {:
@@ -195,7 +195,7 @@ INC ::= to {:
     :};
 
 ASIG ::= ID:id dos_p_igual EXP:exp {:
-        Expresion e = new Expresion();
+        Sentencia e = new Sentencia();
 
         e.valor.append(id.valor+" = "+exp.valor);
         RESULT = e;
@@ -208,7 +208,7 @@ ID ::= identifier:id {:
     :};
 
 EXP ::= EXP:exp1 OP:op EXP:exp2 {:
-        Expresion e = new Expresion();
+        Sentencia e = new Sentencia();
 
         e.valor.append(exp1.valor+" "+op.valor+" "+exp2.valor);
         RESULT = e;
@@ -251,18 +251,18 @@ FACTOR ::= SIMPVALUE:sv {:
         RESULT = sv;
         :}
         | ab_parentesis EXP:exp cr_parentesis {:
-            Expresion e = new Expresion();
+            Sentencia e = new Sentencia();
             e.valor = new StringBuilder("("+exp.valor+")");
             RESULT = s;
         :}
          | identifier:id SUBPPARAMLIST:spl {:
-            Expresion e = new Expresion();
+            Sentencia e = new Sentencia();
             e.valor.append(id + " " + spl.valor);
             RESULT = e;
       :} ;
 
 SUBPPARAMLIST ::= ab_parentesis EXPLIST:el cr_parentesis{:
-                    Expresion e = new Expresion();
+                    Sentencia e = new Sentencia();
                     e.valor.append(" (" +el.valor+" ) ");
                     RESULT = e;
                 :}
@@ -274,7 +274,7 @@ EXPLIST ::= EXP:exp {:
         RESULT = exp;
     :}
      | EXP:exp coma EXPLIST:expl {:
-        Expresion e = new Expresion();
+        Sentencia e = new Sentencia();
 
         e.valor.append(exp.valor+", "+expl.valor);
         RESULT = e;
@@ -287,9 +287,9 @@ PROC_CALL ::= identifier:id SUBPPARAMLIST:spl {:
         RESULT = p;
     :};
 
-// Comprobacion de expresiones condicionales (opcional)
+// Comprobacion de Sentenciaes condicionales (opcional)
 EXPCOND ::= EXPCOND:exp1 OPLOG:op EXPCOND:exp2 {:
-        Expresion e = new Expresion();
+        Sentencia e = new Sentencia();
 
         e.valor.append(exp1.valor);
         e.valor.append(op.valor);
