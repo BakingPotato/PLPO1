@@ -284,13 +284,6 @@ PROC_CALL ::= identifier:id SUBPPARAMLIST:spl {:
         f.valor.append(id.valor);
         f.valor.append(spl.valor);
         RESULT = f;
-    :}
-     |identifier:id{:
-        Funcion f = new Funcion();
-
-        f.valor.append(id.valor);
-        f.valor.append("()");
-        RESULT = f;
     :};
 
 // Comprobacion de expresiones condicionales (opcional)
