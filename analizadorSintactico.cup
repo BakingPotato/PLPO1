@@ -2,17 +2,15 @@ import java_cup.runtime.*;
 import java.util.LinkedList;
 
 
-parser code {:
+action code{:
+     public void reconocido(String r){
+            System.out.println("Se ha reconocido " + "\"" + r + "\"");
+        }
+ :}
 
-public void syntax_error (Symbol s){
-	System.err.println("Error de sintaxis por el lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
-	System.err.println("Error recuperado");
-}
+parser code{:   // hay que averiguar que hace
 
-public void unrecovered_syntax_error(Symbol s){
-	System.err.println("Error de sintaxis grave");
-}
-:};
+:}
 
 
 /* Terminales */
@@ -26,9 +24,12 @@ terminal numeric_real_const;
 
 /* No terminales */
 non terminal PRG, BLQ, DCLLIST, SENTLIST;
-non terminal DCL, DEFCTE, CTELIST, SIMPVALUE, DEFVAR, DEFVARLIST, VARLIST, DEFPROC, DEFFUN, FORMAL_PARAMLIST, FORMAL_PARAM, TBAS;
+non terminal DCL, DEFCTE, SIMPVALUE, DEFVAR, DEFVARLIST;
 non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPPARAMLIST, EXPLIST, PROC_CALL;
 non terminal EXPCOND, OPLOG, FACTORCOND, OPCOMP, INC;
+non terminal DefineList DEFCTE, CTELIST;
+non terminal Funcion DEFFUN, DEFPROC, FORMAL_PARAMLIST, FORMAL_PARAM, VARLIST;
+non terminal Simbolo TBAS;
 
 /* Precedences */
 precedence left lt, gt, let, bet;
@@ -39,16 +40,8 @@ precedence left not;
 /* Grammar */
 start with PRG;
 
-PRG ::= program identifier:id punto_coma BLQ:blq punto  {:
-        Programa p = new Programa();
-        p.ident = id;
-        //Hay que hacer algo con punto_coma y punto
-        p.blq = blq;
-        Programa.generarFichero(p.imprimir().toString());
-        RESULT = p;
-    :}
-    | unit identifier punto_coma DCLLIST:dclist punto {::} ;
-        // Distinguir entre librerias y programas (opcional)
+PRG ::= program identifier punto_coma BLQ punto  {: reconocido("PRG"); :}
+      | unit identifier punto_coma DCLLIST punto {: reconocido("PRG"); :} ;           // Distinguir entre librerias y programas (opcional)
 
 BLQ ::= DCLLIST begin SENTLIST end {: reconocido("BQL"); :} ;
 
@@ -61,36 +54,100 @@ SENTLIST ::= SENT  {: reconocido("SENTLIST"); :}
 DCL ::= DEFCTE  {: reconocido("DCL"); :}
       | DEFVAR  {: reconocido("DCL"); :}
       | DEFPROC {: reconocido("DCL"); :}
-      | DEFFUN  {: reconocido("DCL"); :}  ;
+      | DEFFUN  {: reconocido("DCL"); :} ;
 
-DEFCTE ::= const_ CTELIST {: reconocido("DEFCTE"); :} ;
+DEFCTE ::= const_ CTELIST:cl {: RESULT = cl; :} ;
 
-CTELIST ::= identifier igual SIMPVALUE punto_coma {: reconocido("CTELIST"); :}
-          | CTELIST identifier igual SIMPVALUE punto_coma {: reconocido("CTELIST"); :} ;
+CTELIST ::= identifier:i igual SIMPVALUE:sv punto_coma
+            {:  DefineList dl = new DefineList();
+                Define d = new Define();
+                d.id = i;
+                d.sim = sv;
+                dl.defines.add(d);
+                RESULT = dl; :}
+        | CTELIST:cl identifier igual SIMPVALUE:sv punto_coma
+            {: DefineList dl = cl;
+               Define d = new Define();
+               d.id = i;
+               d.sim = sv;
+               dl.defines.add(d);
+               RESULT = dl; :} ;
 
-SIMPVALUE ::= numeric_integer_const {: reconocido("SIMPVALUE"); :}
-            | numeric_real_const    {: reconocido("SIMPVALUE"); :}
-            | string_const          {: reconocido("SIMPVALUE"); :};
+SIMPVALUE ::= numeric_integer_const:i1
+                {:  Simbolo s = new Simbolo();
+                    s.tipo = TipoSim.T_INTEGER;
+                    s.valor = new StringBuilder(i1);
+                    RESULT = s; :}
+            | numeric_real_const:r1
+                {:  Simbolo s = new Simbolo();
+                    s.tipo = TipoSim.T_FLOAT;
+                    s.valor = new StringBuilder(r1);
+                    RESULT = s; :}
+            | string_const:s1
+                {:  Simbolo s = new Simbolo();
+                    s.tipo = TipoSim.T_STRING;
+                    s.valor = new StringBuilder(s1);
+                    RESULT = s; :} ;
 
-DEFVAR ::= var DEFVARLIST punto_coma {: reconocido("DEFVAR"); :} ;
+DEFVAR ::= var DEFVARLIST punto_coma {: // estas deben ir en la funcion void main (void) :} ;
 
 DEFVARLIST ::= VARLIST dos_puntos TBAS {: reconocido("DEFVARLIST"); :}
              | DEFVARLIST punto_coma VARLIST dos_puntos TBAS {: reconocido("DEFVARLIST"); :} ;
 
-VARLIST ::= identifier | identifier coma VARLIST {: reconocido("VARLIST"); :} ;
+VARLIST ::= identifier:i
+            {:  Funcion f = new Funcion(); // primero vamos metiendo parametros a la funcion
+                f.paramList.add(new Variable().append(i));
+                RESULT = f;
+            :}
+          | identifier:i coma VARLIST:vl
+            {:  Funcion f = vl;
+                f.paramList.add(new Variable().append(i));
+                RESULT = f;
+             :} ;
 
-DEFPROC ::=  procedure identifier FORMAL_PARAMLIST punto_coma BLQ punto_coma {: reconocido("DEFPROC"); :} ;
+DEFPROC ::=  procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:b punto_coma
+                {:  Funcion f = fpl; // Nos quedamos con la lista de parametros
+                    f.name = i;
+                    f.tipo = "void";
+                    // bloque de sentencias
+                    RESULT = f;
+                    :} ;
 
-DEFFUN ::=  function identifier FORMAL_PARAMLIST dos_puntos TBAS punto_coma BLQ punto_coma  {: reconocido("DEFFUN"); :};
+DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_coma BLQ:b punto_coma
+                {:  Funcion f = fpl;
+                    f.name = i;
+                    f.tipo = t.valor; // cogemos el valor que devuelve la funcion
+                    // bloque de sentencias
+                    RESULT = f;
+                    :};
 
-FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM cr_parentesis {: reconocido("FORMAL_PARAMLIST"); :} ;
+FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis
+                {: RESULT = fp; :} ;
 
-FORMAL_PARAM ::= VARLIST dos_puntos TBAS {: reconocido("FORMAL_PARAM"); :}
-               | VARLIST dos_puntos TBAS punto_coma FORMAL_PARAM {: reconocido("FORMAL_PARAM"); :}
-               | /* lambda */ {: reconocido("FORMAL_PARAM"); :};
+FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
+                {:  Funcion f = vl;
+                    for (Variable v : f.paramList) {
+                        v.sim = t; // Actualizamos el tipo de los parametros
+                    }
+                    RESULT = f;
+                 :}
+               | VARLIST:vl dos_puntos TBAS punto_coma FORMAL_PARAM:fp
+                {: Funcion f = vl;
+                   for (Variable v : f.paramList) {
+                       v.sim = t; // Actualizamos el tipo de los parametros
+                   }
+                   f.paramList.addAll(fp.paramList); // Anadimos los demas parametros de otros tipos
+                   RESULT = f; :}
+               | /* lambda */ ;
 
-TBAS ::= integer  {: reconocido("TBAS"); :}
-       | real     {: reconocido("TBAS"); :} ;
+TBAS ::= integer  {: Simbolo s = new Simbolo();
+                     s.tipo = TipoSim.T_STRING;
+                     s.valor = new StringBuilder("int");
+                     RESULT = s; :}
+       | real     {: Simbolo s = new Simbolo();
+                     s.tipo = TipoSim.T_STRING;
+                     s.valor = new StringBuilder("float");
+                     RESULT = s; :} ;
 
 // Zona de sentencias
 SENT ::= ASIG punto_coma  {: reconocido("SENT"); :}
@@ -105,22 +162,38 @@ INC ::= to {: reconocido("INC"); :}
 
 ASIG ::= ID dos_p_igual EXP {: reconocido("ASIG"); :} ;
 
-ID ::= identifier:i1 {: reconocido("ID"); :};
+ID ::= identifier:i1 {: Simbolo s = new Simbolo();
+                        s.valor = new StringBuilder(i1);
+                        RESULT = s; :};
 
 EXP ::= EXP OP EXP {: reconocido("EXP"); :}
       | FACTOR {: reconocido("EXP"); :} ;
 
 OP ::= OPARIT {: reconocido("OP"); :};
 
-OPARIT ::= op_mas  {: reconocido("OPARIT"); :}
-         | op_men  {: reconocido("OPARIT"); :}
-         | op_mul  {: reconocido("OPARIT"); :}
-         | div     {: reconocido("OPARIT"); :}
-         | mod     {: reconocido("OPARIT"); :};
+OPARIT ::= op_mas  {:   Simbolo s = new Simbolo();
+                        s.valor = new StringBuilder("+");
+                        RESULT = s; :}
+         | op_men  {:   Simbolo s = new Simbolo();
+                        s.valor = new StringBuilder("-");
+                        RESULT = s; :}
+         | op_mul  {:   Simbolo s = new Simbolo();
+                        s.valor = new StringBuilder("*");
+                        RESULT = s; :}
+         | div     {:   Simbolo s = new Simbolo();
+                        s.valor = new StringBuilder("/");
+                        RESULT = s; :}
+         | mod     {:   Simbolo s = new Simbolo();
+                        s.valor = new StringBuilder("%");
+                        RESULT = s; :} ;
 
-FACTOR ::= SIMPVALUE {: reconocido("FACTOR"); :}
-         | ab_parentesis EXP cr_parentesis {: reconocido("FACTOR"); :}
-         | identifier SUBPPARAMLIST {: reconocido("FACTOR"); :} ;
+FACTOR ::= SIMPVALUE:sv {: RESULT = sv; :}
+         | ab_parentesis EXP:exp cr_parentesis {: Simbolo s = new Simbolo();
+                                              s.valor = new StringBuilder("(");
+                                              s.valor.append(exp.valor);
+                                              s.valor.append(")");
+                                              RESULT = s; :}
+         | identifier:i1 SUBPPARAMLIST {: reconocido("FACTOR"); :} ;
 
 SUBPPARAMLIST ::= /* lambda */ {: reconocido("SUBPPARAMLIST"); :}
                 | ab_parentesis EXPLIST cr_parentesis {: reconocido("SUBPPARAMLIST"); :} ;
@@ -134,41 +207,36 @@ PROC_CALL ::= identifier SUBPPARAMLIST {: reconocido("PROC_CALL"); :};
 EXPCOND ::= EXPCOND OPLOG EXPCOND {: reconocido("EXPCOND"); :}
           | FACTORCOND {: reconocido("EXPCOND"); :} ;
 
-OPLOG ::= or  {: reconocido("OPLOG"); :}
-         | and {: reconocido("OPLOG"); :} ;
+OPLOG ::= or  {:    Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder("||");
+                    RESULT = s; :}
+        | and {:    Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder("&&");
+                    RESULT = s; :} ;
 
 FACTORCOND ::= EXP OPCOMP EXP {: reconocido("FACTORCOND"); :}
-             | ab_parentesis EXP cr_parentesis {: reconocido("FACTORCOND"); :}
-             | not FACTORCOND {: reconocido("FACTORCOND"); :} ;
+             | ab_parentesis EXP:exp cr_parentesis {:   Simbolo s = new Simbolo();
+                                                        s.valor = new StringBuilder("(");
+                                                        s.valor.append(exp.valor);
+                                                        s.valor.append(")");
+                                                        RESULT = s;:}
+             | not FACTORCOND:fc {: Simbolo s = new Simbolo();
+                                 s.valor = new StringBuilder("!");
+                                 s.valor.append(fc.valor);
+                                 RESULT = s; :} ;
 
-//Operaciones de comparacion
-OPCOMP ::= lt  {: //Menor que
-        Simbolo s = new Simbolo();
-        s.esOperacionC = true;
-        s.operacionC = " < ";
-        RESULT = s;
-    :}
-    | gt  {: //Mayor que
-        Simbolo s = new Simbolo();
-        s.esOperacionC = true;
-        s.operacionC = " > ";
-        RESULT = s;
-    :}
-    | let {: //Menor o igual que
-        Simbolo s = new Simbolo();
-        s.esOperacionC = true;
-        s.operacionC = " <= ";
-        RESULT = s;
-    :}
-    | bet {: //Mayor o igual que
-        Simbolo s = new Simbolo();
-        s.esOperacionC = true;
-        s.operacionC = " >= ";
-        RESULT = s;
-    :}
-    | igual {: //Igual que
-        Simbolo s = new Simbolo();
-        s.esOperacionC = true;
-        s.operacionC = " = ";
-        RESULT = s;
-    :};
+OPCOMP ::= lt  {:   Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder("<");
+                    RESULT = s; :}
+         | gt  {:   Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder(">");
+                    RESULT = s; :}
+         | let {:   Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder("<=");
+                    RESULT = s; :}
+         | bet {:   Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder(">=");
+                    RESULT = s; :}
+         | igual {: Simbolo s = new Simbolo();
+                    s.valor = new StringBuilder("==");
+                    RESULT = s; :};
