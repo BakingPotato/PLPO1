@@ -9,6 +9,7 @@ public class Simbolo {
 
     public TipoSim tipo;
     public StringBuilder valor;
+    public StringBuilder signo;
 
     public Simbolo(){
         valor = new StringBuilder();
