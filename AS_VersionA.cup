@@ -197,7 +197,7 @@ INC ::= to {:
 ASIG ::= ID:id dos_p_igual EXP:exp {:
         Expresion e = new Expresion();
 
-        e.simbolos.add(id.identificador+" = "+exp.valor);
+        e.valor.append(id.identificador+" = "+exp.valor);
         RESULT = e;
     :};
 
