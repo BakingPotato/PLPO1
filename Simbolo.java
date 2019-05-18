@@ -15,4 +15,8 @@ public class Simbolo {
         valor = new StringBuilder();
     }
 
+    public Simbolo(String string) {
+        this.valor = new StringBuilder(string);
+    }
+
 }

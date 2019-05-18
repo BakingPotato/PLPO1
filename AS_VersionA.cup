@@ -167,7 +167,7 @@ SENT ::= ASIG:a punto_coma  {:
      :}
      | while_ EXPCOND:ec do_ BLQ:blq  {:
         Sentencia sent = new Sentencia();
-        sent.valor.append("while("+ec.valor+")"+blq.valor);
+        sent.valor.append("while("+ec.valor+")" +blq.valor);
         RESULT = sent;
      :}
      | repeat BLQ:blq until EXPCOND:ec punto_coma  {:
@@ -177,7 +177,7 @@ SENT ::= ASIG:a punto_coma  {:
      :}
      | bucle_for identifier:id dos_p_igual EXP:exp1 INC:inc EXP:exp2 do_ BLQ:blq  {:
         Sentencia sent = new Sentencia();
-        sent.valor.append("for("+id.valor+"="+exp1.valor+"; "+exp1.valor+inc.valor+exp2.valor+"; "+ident.valor+"="+ident.valor+inc.signo+")"+blq.valor);
+        sent.valor.append("for("+id.valor+"="+exp1.valor+"; "+exp1.valor+inc.valor+exp2.valor+"; "+id.valor+"="+id.valor+inc.signo+")"+blq.valor);
         RESULT = sent;
      :};
 
@@ -197,7 +197,7 @@ INC ::= to {:
 ASIG ::= ID:id dos_p_igual EXP:exp {:
         Expresion e = new Expresion();
 
-        e.valor.append(id.identificador+" = "+exp.valor);
+        e.valor.append(id.valor+" = "+exp.valor);
         RESULT = e;
     :};
 
@@ -210,11 +210,11 @@ ID ::= identifier:id {:
 EXP ::= EXP:exp1 OP:op EXP:exp2 {:
         Expresion e = new Expresion();
 
-        e.valor.append(exp1.simbolos+" "+op.valor+" "+exp2.valor);
+        e.valor.append(exp1.valor+" "+op.valor+" "+exp2.valor);
         RESULT = e;
     :}
     | FACTOR:fact {:
-        RESULT = exp;
+        RESULT = fact;
     :} ;
 
 
@@ -249,24 +249,26 @@ OPARIT ::= op_mas{:
 
 FACTOR ::= SIMPVALUE:sv {:
         RESULT = sv;
-    :}
-    | ab_parentesis EXP:exp cr_parentesis {:
-        Expresion e = new Expresion();
-        e.valor = new StringBuilder("("+exp.valor+")");
-        RESULT = s;
-    :}
-     | identifier:id SUBPPARAMLIST:spl {:
-        Expresion e = new Expresion();
-        e.valor.append(id);
-        e.valor.append(spl.valor);
-        RESULT = e;
+        :}
+        | ab_parentesis EXP:exp cr_parentesis {:
+            Expresion e = new Expresion();
+            e.valor = new StringBuilder("("+exp.valor+")");
+            RESULT = s;
+        :}
+         | identifier:id SUBPPARAMLIST:spl {:
+            Expresion e = new Expresion();
+            e.valor.append(id + " " + spl.valor);
+            RESULT = e;
       :} ;
 
-SUBPPARAMLIST ::= ab_parentesis EXPLIST: el cr_parentesis{:
-        Expresion e = new Expresion();
-        e.valor.append("( " +el.valor+" )");
-        RESULT = e;
-    :};
+SUBPPARAMLIST ::= ab_parentesis EXPLIST:el cr_parentesis{:
+                    Expresion e = new Expresion();
+                    e.valor.append(" (" +el.valor+" ) ");
+                    RESULT = e;
+                :}
+                | /*lambda*/ {:
+                    RESULT = new Simbolo();
+                     :} ;
 
 EXPLIST ::= EXP:exp {:
         RESULT = exp;
@@ -279,24 +281,23 @@ EXPLIST ::= EXP:exp {:
      :};
 
 PROC_CALL ::= identifier:id SUBPPARAMLIST:spl {:
-        Funcion f = new Funcion();
+        Simbolo p = new Simbolo();
 
-        f.valor.append(id.valor);
-        f.valor.append(spl.valor);
-        RESULT = f;
+        p.valor.append(id.valor + " " + spl.valor);
+        RESULT = p;
     :};
 
 // Comprobacion de expresiones condicionales (opcional)
 EXPCOND ::= EXPCOND:exp1 OPLOG:op EXPCOND:exp2 {:
         Expresion e = new Expresion();
 
-        e.valor,append(exp1.valor);
+        e.valor.append(exp1.valor);
         e.valor.append(op.valor);
         e.valor.append(exp2.valor);
         RESULT = e;
     :}
-    | FACTORCOND:exp {:
-        RESULT = exp;
+    | FACTORCOND:fc {:
+        RESULT = fc;
     :} ;
 
 OPLOG ::= or  {:    Simbolo s = new Simbolo();
@@ -306,20 +307,17 @@ OPLOG ::= or  {:    Simbolo s = new Simbolo();
                     s.valor = new StringBuilder("&&");
                     RESULT = s; :} ;
 
-FACTORCOND ::= EXP OPCOMP EXP {:
-        reconocido("FACTORCOND");
+FACTORCOND ::= EXP:e1 OPCOMP:op EXP:e2 {:
+        RESULT = new Simbolo(e1.valor + op.valor + e2.valor);
     :}
     | ab_parentesis EXP:exp cr_parentesis {:
         Simbolo s = new Simbolo();
-        s.valor = new StringBuilder("(");
-        s.valor.append(exp.valor);
-        s.valor.append(")");
+        s.valor.append("(" + exp.valor + ")");
         RESULT = s;
     :}
     | not FACTORCOND:fc {:
         Simbolo s = new Simbolo();
-        s.valor = new StringBuilder("!");
-        s.valor.append(fc.valor);
+        s.valor.append("!" + fc.valor);
         RESULT = s;
      :};
 
