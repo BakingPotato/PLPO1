@@ -49,16 +49,23 @@ BLQ ::= DCLLIST:d begin SENTLIST:s end {:
             :} ;
 
 DCLLIST ::= /* lambda */ {:
-                RESULT = new StringBuilder();
+                RESULT = new Bloque();
             :} | DCLLIST:dl DCL:d {:
-                RESULT = dl.append(d);
+                dl.dclList.add(d);
                 :};
 
 SENTLIST ::= SENT:s  {:
-                RESULT = s.valor;
+                /*RESULT = s.valor;*/
+                Bloque b = new Bloque();
+                b.sentList.add(s);
+                RESULT = b;
                 :}
            | SENTLIST:sl SENT:s {:
-                RESULT = sl.append(sl).append(" ").append(s); :} ;
+                /*RESULT = sl.append(sl).append(" ").append(s);*/
+                sl.sentList.add(s);
+                RESULT = sl;
+            :} ;
+
 // Zona de declaraciones
 DCL ::= DEFCTE:d  {: RESULT = d.print(); :}
       | DEFVAR:d  {: RESULT = d.print(); :}
@@ -99,27 +106,25 @@ SIMPVALUE ::= numeric_integer_const:i1
                     RESULT = s; :} ;
 
 DEFVAR ::= var DEFVARLIST:d punto_coma {: // estas deben ir en la funcion void main (void)
-                                        Function f = d;
+                                        /*Function f = d;
                                         f.type = "void";
                                         f.name = "main";
-                                        RESULT = f;
+                                        RESULT = f;*/
+                                        RESULT = d;
                                         :} ;
 
 DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
                     /*Funcion f = v;
                     f.tipo = t;
                     RESULT = f;*/
-                    VarList vl = v;
                     v.tipo = t;
                     Function f = new Function();
-                    f.varLists.add(vl);
+                    f.varLists.add(v);
                     RESULT = f;
                     :}
              | DEFVARLIST:dvl punto_coma VARLIST:vl dos_puntos TBAS:t {:
-                    Varlist v = vl;
-                    v.tipo = t;
-                    Function f = dvl;
-                    f.varLists.add(v);
+                    vl.tipo = t;
+                    dvl.varLists.add(vl);
                     RESULT = f;
                     :} ;
 
@@ -128,7 +133,7 @@ VARLIST ::= identifier:i
                 f.paramList.add(new Variable().id.append(i));
                 RESULT = f;*/
                 VarList vl = new VarList();
-                vl.vars.add(i);
+                vl.vars.push(i);
                 RESULT = vl;
             :}
           | identifier:i coma VARLIST:vl
@@ -136,7 +141,7 @@ VARLIST ::= identifier:i
                 f.paramList.add(new Variable().id.append(i));
                 RESULT = f;*/
                 VarList v = vl;
-                v.vars.add(i);
+                v.vars.push(i);
                 RESULT = v;
              :} ;
 
@@ -146,9 +151,13 @@ DEFPROC ::=  procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:blq punt
                     f.tipo = "void";
                     // bloque de sentencias
                     RESULT = f;*/
-                    StringBuilder s = new StringBuilder("void ").append(i).append(fpl).append(";");
+                    /*StringBuilder s = new StringBuilder("void ").append(i).append(fpl).append(";");
                     s.append(blq).append(";");
-                    RESULT = s;
+                    RESULT = s;*/
+                    fpl.type = "void";
+                    fpl.name = i;
+                    fpl.bloque = blq;
+                    RESULT = fpl;
                     :} ;
 
 DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_coma BLQ:blq punto_coma
@@ -157,16 +166,21 @@ DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_c
                     f.tipo = t.valor; // cogemos el valor que devuelve la funcion
                     // bloque de sentencias
                     RESULT = f;*/
-                    StringBuilder s = new StringBuilder(t.valor).append(" ").append(i).append(fpl).append(";");
+                    /*StringBuilder s = new StringBuilder(t.valor).append(" ").append(i).append(fpl).append(";");
                     s.append(blq).append(";");
-                    RESULT = s;
+                    RESULT = s;*/
+                    fpl.type = t;
+                    fpl.name = i;
+                    fpl.bloque = blq;
+                    RESULT = fpl;
                     :};
 
 FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis {:
-                            StringBuilder r = new StringBuilder("( ");
-                            r.append(fp.print()).append(")");
-                            RESULT = r;
-                            :} ;
+                        RESULT = fp;
+                    :}
+                    | /* lambda */ {:
+                        RESULT = new Function();
+                    :} ;
 
 FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                 {:  /*Funcion f = vl;
@@ -174,9 +188,10 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                         v.sim = t; // Actualizamos el tipo de los parametros
                     }
                     RESULT = f;*/
-                    VarList v = vl;
-                    v.tipo = t;
-                    RESULT = v;
+                    vl.tipo = t;
+                    Function f = new Function();
+                    f.varLists.push(vl);
+                    RESULT = f;
                  :}
                | VARLIST:vl dos_puntos TBAS:t punto_coma FORMAL_PARAM:fp
                 {: /*Funcion f = vl;
@@ -185,13 +200,10 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                    }
                    f.paramList.addAll(fp.paramList); // Anadimos los demas parametros de otros tipos
                    RESULT = f; */
-                   VarList v = vl;
-                   v.tipo = t;
-                   Function f = fp;
-                   f.varLists.add(v);
-                   RESULT = f;
-                   :}
-               | /* lambda */ ;
+                   vl.tipo = t;
+                   fp.varLists.push(vl);
+                   RESULT = fp;
+                   :};
 
 TBAS ::= integer  {: Simbolo s = new Simbolo();
                      s.tipo = Simbolo.TipoSim.T_STRING;
@@ -204,13 +216,12 @@ TBAS ::= integer  {: Simbolo s = new Simbolo();
 
 // Zona de sentencias
 SENT ::= ASIG:a punto_coma  {:
-        Sentencia s =  new Sentencia();
-        s.valor.append(a.valor+";");
+        a.valor.append(";");
+        RESULT = a;
     :}
     | PROC_CALL:pc punto_coma {:
-       Sentencia s = new Sentencia();
-       s.valor.append(pc.valor+";");
-       RESULT = s;
+       pc.valor.append(";");
+       RESULT = pc;
     :}
     | if_ EXPCOND:ec then BLQ:blq1 else_ BLQ:blq2 {:
         Sentencia e = new Sentencia();
@@ -219,38 +230,45 @@ SENT ::= ASIG:a punto_coma  {:
      :}
      | while_ EXPCOND:ec do_ BLQ:blq  {:
         Sentencia e = new Sentencia();
-        e.valor.append("while("+ec.valor+")" +blq);
+        e.valor.append("while(").append(ec.valor).append(")\n").append(blq);
         RESULT = e;
      :}
      | repeat BLQ:blq until EXPCOND:ec punto_coma  {:
         Sentencia e = new Sentencia();
-        e.valor.append("do"+blq+"until("+ec.valor+")");
+        e.valor.append("do\n").append(blq).append("\nuntil(").append(ec.valor).append(")");
         RESULT = e;
      :}
      | bucle_for identifier:id dos_p_igual EXP:exp1 INC:inc EXP:exp2 do_ BLQ:blq  {:
-        Sentencia e = new Sentencia();
-        e.valor.append("for("+id+"="+exp1.valor+"; "+exp1.valor+inc.valor+exp2.valor+"; "+id+"="+id+inc.signo+")"+blq);
-        RESULT = e;
+        /*Sentencia e = new Sentencia();
+        e.valor.append("for("+id.valor+"="+exp1.valor+"; "+exp1.valor+inc.valor+exp2.valor+"; "+id.valor+"="+id.valor+inc.signo+")"+blq.valor);
+        RESULT = e;*/
+        Sentencia s = new Sentencia();
+        s.valor.append("for (").append(id).append("=").append(exp1.valor).append("; ").append(id).append(inc.op);
+        s.valor.append(exp2.valor).append(inc.valor).append("; ").append(id).append("=").append(id).append(inc.valor).append(")");
+        s.valor.append("\n{").append(blq).append("}");
+        RESULT = s;
      :};
 
 INC ::= to {:
-        Simbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder("<");
         s.signo = new StringBuilder("+1");
-        RESULT = s;
+        RESULT = s;*/
+
+        RESULT = new Incremento('<', "+1");
     :}
      | downto {:
-        Simbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder(">");
         s.signo = new StringBuilder("-1");
-        RESULT = s;
+        RESULT = s;*/
+
+        RESULT = new Incremento('>', "-1");
     :};
 
 ASIG ::= ID:id dos_p_igual EXP:exp {:
-        Sentencia e = new Sentencia();
-
-        e.valor.append(id.valor+" = "+exp.valor);
-        RESULT = e;
+        StringBuilder valor = new StringBuilder(" ::= ").append(exp.valor);
+        RESULT = new Sentencia(id.valor, valor, true);
     :};
 
 ID ::= identifier:id {:
@@ -259,11 +277,14 @@ ID ::= identifier:id {:
         RESULT = s;
     :};
 
-EXP ::= EXP:exp1 OP:op EXP:exp2 {:
-        Sentencia e = new Sentencia();
+EXP ::= EXP:e1 OP:op EXP:e2 {:
+        /*Sentencia e = new Sentencia();
 
         e.valor.append(exp1.valor+" "+op.valor+" "+exp2.valor);
-        RESULT = e;
+        RESULT = e;*/
+
+        e1.valor.append(" ").append(op).append(" ").append(e2);
+        RESULT = e1;
     :}
     | FACTOR:fact {:
         RESULT = fact;
@@ -300,11 +321,11 @@ OPARIT ::= op_mas{:
         RESULT = s; :} ;
 
 FACTOR ::= SIMPVALUE:sv {:
-            RESULT = new Sentencia(sv);
+            RESULT = new Sentencia(sv.valor);
         :}
         | ab_parentesis EXP:exp cr_parentesis {:
             Sentencia e = new Sentencia();
-            e.valor = new StringBuilder("("+exp.valor+")");
+            e.valor.append("(").append(exp.valor).append(")");
             RESULT = e;
         :}
          | identifier:id SUBPPARAMLIST:spl {:
@@ -315,7 +336,7 @@ FACTOR ::= SIMPVALUE:sv {:
 
 SUBPPARAMLIST ::= ab_parentesis EXPLIST:el cr_parentesis{:
         Sentencia e = new Sentencia();
-        e.valor.append(" (" +el.valor+" ) ");
+        e.valor.append(" ( ").append(el.valor).append(" ) ");
         RESULT = e;
     :}
     | /*lambda*/ {:
@@ -326,32 +347,23 @@ EXPLIST ::= EXP:exp {:
         RESULT = exp;
     :}
      | EXP:exp coma EXPLIST:expl {:
-        Sentencia e = new Sentencia();
-
-        e.valor.append(exp.valor+", "+expl.valor);
-        RESULT = e;
+        exp.valor.append(", ").append(expl.valor);
+        RESULT = exp;
      :};
 
 PROC_CALL ::= identifier:id SUBPPARAMLIST:spl {:
-        Simbolo p = new Simbolo();
-
-        p.valor.append(id).append(" ").append(spl.valor);
-        RESULT = p;
+        Sentencia s = new Sentencia();
+        s.valor.append(id).append(" ").append(spl.valor);
+        RESULT = s;
     :};
 
 // Comprobacion de Sentenciaes condicionales (opcional)
 EXPCOND ::= EXPCOND:exp1 OPLOG:op EXPCOND:exp2 {:
-        Sentencia e = new Sentencia();
-
-        e.valor.append(exp1.valor);
-        e.valor.append(op.valor);
-        e.valor.append(exp2.valor);
-        RESULT = e;
+        exp1.valor.append(" ").append(op.valor).append(" ").append(exp2.valor);
+        RESULT = exp1;
     :}
     | FACTORCOND:fc {:
-        Sentencia e = new Sentencia();
-        e.valor.append(fc.valor);
-        RESULT = e;
+        RESULT = fc;
     :} ;
 
 OPLOG ::= or  {:    Simbolo s = new Simbolo();
@@ -362,43 +374,47 @@ OPLOG ::= or  {:    Simbolo s = new Simbolo();
                     RESULT = s; :} ;
 
 FACTORCOND ::= EXP:e1 OPCOMP:op EXP:e2 {:
-        Simbolo s = new Simbolo();
-        s.valor.append(e1.valor).append(op.valor).append(e2.valor);
-        RESULT = s;
+        e1.valor.append(op).append(e2.valor);
+        RESULT = e1;
     :}
     | ab_parentesis EXP:exp cr_parentesis {:
-        Simbolo s = new Simbolo();
-        s.valor = new StringBuilder("(" + exp.valor + ")");
+        Sentencia s = new Sentencia();
+        s.valor.append("(").append(exp.valor).append(")");
         RESULT = s;
     :}
     | not FACTORCOND:fc {:
-        Simbolo s = new Simbolo();
-        s.valor.append("!" + fc.valor);
+        Sentencia s = new Sentencia();
+        s.valor.append("!").append(fc.valor);
         RESULT = s;
      :};
 
 OPCOMP ::= lt  {:
-        Simbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder("<");
-        RESULT = s;
+        RESULT = s;*/
+        RESULT = new StringBuilder("<");
     :}
     | gt  {:
-        Simbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder(">");
-        RESULT = s;
+        RESULT = s;*/
+        RESULT = new StringBuilder(">");
     :}
     | let {:
-        Simbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder("<=");
-        RESULT = s;
+        RESULT = s;*/
+        RESULT = new StringBuilder("<=");
     :}
     | bet {:
-        Simbolo s = new Simbolo();
+        S/*imbolo s = new Simbolo();
         s.valor = new StringBuilder(">=");
-        RESULT = s;
+        RESULT = s;*/
+        RESULT = new StringBuilder(">=");
     :}
     | igual {:
-        Simbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder("==");
-        RESULT = s;
+        RESULT = s;*/
+        RESULT = new StringBuilder("==");
     :};
