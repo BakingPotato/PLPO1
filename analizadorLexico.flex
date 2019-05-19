@@ -26,6 +26,7 @@ import java_cup.runtime.*;
 /* Macros */
 
 LineTerminator = \r|\n|\r\n
+Blank = {LineTerminator} | [ ] //Arreglar para que reconozca espacios y saltos de lineas
 InputCharacter = [^\r\n]
 Alphabet = [a-z|A-Z]
 Digit = [0-9]
@@ -64,15 +65,15 @@ MultipleLineComment = "(*" [^*] ~"*)"
 ":="        { return symbol(sym.dos_p_igual); }
 "("         { return symbol(sym.ab_parentesis); }
 ")"         { return symbol(sym.cr_parentesis); }
-"program"   { return symbol(sym.program); }
-"begin"     { return symbol(sym.begin); }
-"end"       { return symbol(sym.end); }
+"PROGRAM"   { return symbol(sym.program); }
+"BEGIN"     { return symbol(sym.begin); }
+"END"       { return symbol(sym.end); }
 "const"     { return symbol(sym.const_); }
 "var"       { return symbol(sym.var); }
 "PROCEDURE" { return symbol(sym.procedure); }
 "FUNCTION"  { return symbol(sym.function); }
-"integer"   { return symbol(sym.integer); }
-"real"      { return symbol(sym.real); }
+"INTEGER"   { return symbol(sym.integer); }
+"REAL"      { return symbol(sym.real); }
 "div"       { return symbol(sym.div); }
 "mod"       { return symbol(sym.mod); }
 
@@ -103,6 +104,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
 {Numeric_real_fixed_point_const}    { return symbol(sym.numeric_real_const, new Float(yytext())); }
 {Numeric_real_exponential_const}    { return symbol(sym.numeric_real_const, new Long(yytext())); }
 {Numeric_real_mixed_const}          { return symbol(sym.numeric_real_const, new Long(yytext())); }
+{Blank} { }
 "'"                                 { yybegin(STRING); string.setLength(0); }
 // [^"*)"] esto se supone que va con algo
 
@@ -116,10 +118,9 @@ MultipleLineComment = "(*" [^*] ~"*)"
 
     {StringCharacter}+  { string.append( yytext() ); }
 
-    /* Error fin de linea (preguntar si hace falta) */
-    {LineTerminator}    { throw new RuntimeException("Error lexico: salto de linea detectado en la constante literal de la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
+    /* Espacios en blanco*/
 
 }
 
 /* errorfallback */
-[^] | \n    { throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
+[^]  { throw new RuntimeException("Error lexico: caracter no reconocido <" + yytext() + "> en la linea " + (yyline+1) + " y columna " + (yycolumn+1)); }
