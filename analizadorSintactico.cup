@@ -24,7 +24,7 @@ terminal numeric_real_const;
 
 /* No terminales */
 non terminal PRG, BLQ, DCLLIST, SENTLIST;
-non terminal DCL, DEFCTE, SIMPVALUE, DEFVAR, DEFVARLIST;
+non terminal DCL, SIMPVALUE, DEFVAR, DEFVARLIST;
 non terminal SENT, ASIG, ID, EXP, OP, OPARIT, FACTOR, SUBPPARAMLIST, EXPLIST, PROC_CALL;
 non terminal EXPCOND, OPLOG, FACTORCOND, OPCOMP, INC;
 non terminal DefineList DEFCTE, CTELIST;
