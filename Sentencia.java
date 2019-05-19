@@ -5,4 +5,6 @@ public class Sentencia{
     public Sentencia(){
         valor = new StringBuilder();
     }
+    public Sentencia(Simbolo s){ valor = new StringBuilder(s.valor);
+    }
 }

@@ -14,7 +14,7 @@ public class Function {
 		StringBuilder r = new StringBuilder();
 		for (VarList vl : this.varLists) {
 			for (String v : vl.vars) {
-				r.append(vl.tipo).append(" ").append(v).append(", ")
+				r.append(vl.tipo).append(" ").append(v).append(", ");
 			}
 		}
 		r.setLength(r.length()-2);
