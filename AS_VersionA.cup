@@ -39,11 +39,12 @@ precedence left not;
 /* Grammar */
 start with PRG;
 
-PRG ::= program identifier punto_coma BLQ:b punto  {:
-                    RESULT = b;
+PRG ::= program identifier punto_coma BLQ:blq punto  {:
+                    print(blq.returnSB());
                 :}
-      | unit identifier:id punto_coma DCLLIST:d punto {:
+      | unit identifier:id punto_coma DCLLIST:dl punto {:
                 StringBuilder s = new StringBuilder("// Librería: ").append(id).append("\n").append(d);
+                print(s.append(dl.returnSB()));
                 :} ;           // Distinguir entre librerias y programas (opcional)
 
 BLQ ::= DCLLIST:d begin SENTLIST:s end {:
