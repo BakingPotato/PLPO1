@@ -70,7 +70,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
 "const"     { return symbol(sym.const_); }
 "var"       { return symbol(sym.var); }
 "PROCEDURE" { return symbol(sym.procedure); }
-"function"  { return symbol(sym.function); }
+"FUNCTION"  { return symbol(sym.function); }
 "integer"   { return symbol(sym.integer); }
 "real"      { return symbol(sym.real); }
 "div"       { return symbol(sym.div); }

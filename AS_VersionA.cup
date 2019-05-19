@@ -2,14 +2,15 @@ import java_cup.runtime.*;
 import java.util.LinkedList;
 
 parser code {: //Tratamiento de errores
-    public void syntax_error (Symbol s){
-	    System.err.println("Error de sintaxis (lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
-	    System.err.println("Error recuperado");
-    }
 
-    public void unrecovered_syntax_error(Symbol s){
-	    System.err.println("Error de sintaxis grave");
-    }
+public void syntax_error (Symbol s){
+	System.err.println("Error de sintaxis (lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
+	System.err.println("Error recuperado");
+}
+
+public void unrecovered_syntax_error(Symbol s){
+	System.err.println("Error de sintaxis no recuperable");
+}
 :};
 
 
@@ -18,7 +19,7 @@ terminal program, begin, end, const_, var, procedure, function, unit;
 terminal if_, then, else_, while_, do_, repeat, until, to, downto ,bucle_for;
 terminal integer, real, div, mod, or, and, not, lt, gt, let, bet;
 terminal igual, op_mas, op_men, op_mul, coma, punto, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
-terminal StringBuilder identifier, string_const, numeric_integer_const, numeric_real_const;
+terminal String identifier, string_const, numeric_integer_const, numeric_real_const;
 
 /* No terminales */
 non terminal Incremento INC;
@@ -40,11 +41,11 @@ precedence left not;
 start with PRG;
 
 PRG ::= program identifier punto_coma BLQ:blq punto  {:
-                    print(blq.returnSB());
+                System.out.print(blq.returnSB());
                 :}
       | unit identifier:id punto_coma DCLLIST:dl punto {:
-                StringBuilder s = new StringBuilder("// Librería: ").append(id).append("\n").append(d);
-                print(s.append(dl.returnSB()));
+                StringBuilder s = new StringBuilder("// Librería: ").append(id).append("\n").append(dl);
+                System.out.print(s.append(dl.returnSB()));
                 :} ;           // Distinguir entre librerias y programas (opcional)
 
 BLQ ::= DCLLIST:d begin SENTLIST:s end {:
@@ -99,7 +100,9 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
                d.sim = sv;
                dl.defines.add(d);
                RESULT = dl; */
-                cl.varLists.peek().add(id + " = " + sv.valor + ";");
+                VarList v = new VarList();
+                v.vars.add(id + " = " + sv.valor + ";");
+                cl.varLists.addLast(v);
                 RESULT = cl;
            :} ;
 
@@ -131,13 +134,13 @@ DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
                     /*Funcion f = v;
                     f.tipo = t;
                     RESULT = f;*/
-                    v.tipo = t;
+                    v.tipo = t.valor.toString();
                     Function f = new Function();
                     f.varLists.add(v);
                     RESULT = f;
                     :}
              | DEFVARLIST:dvl punto_coma VARLIST:vl dos_puntos TBAS:t {:
-                    vl.tipo = t;
+                    vl.tipo = t.valor.toString();
                     dvl.varLists.add(vl);
                     RESULT = dvl;
                     :} ;
@@ -184,7 +187,7 @@ DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_c
                     s.append(blq).append(";");
                     RESULT = s;*/
                     blq.id = i;
-                    fpl.type = t;
+                    fpl.type = t.valor.toString();
                     fpl.name = i;
                     fpl.bloque = blq;
                     RESULT = fpl;
@@ -203,7 +206,7 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                         v.sim = t; // Actualizamos el tipo de los parametros
                     }
                     RESULT = f;*/
-                    vl.tipo = t;
+                    vl.tipo = t.valor.toString();
                     Function f = new Function();
                     f.varLists.push(vl);
                     RESULT = f;
@@ -215,7 +218,7 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                    }
                    f.paramList.addAll(fp.paramList); // Anadimos los demas parametros de otros tipos
                    RESULT = f; */
-                   vl.tipo = t;
+                   vl.tipo = t.valor.toString();
                    fp.varLists.push(vl);
                    RESULT = fp;
                    :};
@@ -317,8 +320,8 @@ OPARIT ::= op_mas{:
     :}
     | op_men{:
        Simbolo s = new Simbolo();
-       s.valor = new StringBuilder("-")
-       ;RESULT = s;
+       s.valor = new StringBuilder("-");
+       RESULT = s;
     :}
     | op_mul {:
         Simbolo s = new Simbolo();
