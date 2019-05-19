@@ -21,12 +21,14 @@ terminal igual, op_mas, op_men, op_mul, coma, punto, dos_puntos, punto_coma, dos
 terminal StringBuilder identifier, string_const, numeric_integer_const, numeric_real_const;
 
 /* No terminales */
-non terminal VarList DEFVARLIST, VARLIST;
-non terminal DefineList DCL, DEFCTE, CTELIST;
-non terminal Function DEFVAR, FORMAL_PARAM;
-non terminal Simbolo SIMPVALUE, TBAS, OP, OPARIT, ID, OPCOMP, OPLOG, INC, FACTORCOND, PROC_CALL;
-non terminal Sentencia SENT, SENTLIST, ASIG, SUBPPARAMLIST, EXPCOND, EXP, EXPLIST, FACTOR;
-non terminal StringBuilder PRG, BLQ, DCLLIST, DEFFUN, DEFPROC, FORMAL_PARAMLIST;
+non terminal Incremento INC;
+non terminal VarList VARLIST;
+non terminal Bloque PRG, BLQ, DCLLIST, SENTLIST;
+non terminal Function DCL, DEFCTE, CTELIST, DEFPROC, DEFFUN, DEFVAR, DEFVARLIST, FORMAL_PARAM, FORMAL_PARAMLIST;
+non terminal Simbolo SIMPVALUE, TBAS, OP, OPARIT, ID, OPLOG;
+
+non terminal Sentencia SENT, ASIG, SUBPPARAMLIST, EXPCOND, EXP, EXPLIST, PROC_CALL, FACTOR, FACTORCOND;
+non terminal StringBuilder OPCOMP;
 
 /* Precedences */
 precedence left lt, gt, let, bet;
@@ -76,7 +78,7 @@ DCL ::= DEFCTE:d  {: RESULT = d; :}
 
 DEFCTE ::= const_ CTELIST:cl {: RESULT = cl; :} ;
 
-CTELIST ::= identifier:i igual SIMPVALUE:sv punto_coma
+CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
             {:  /*DefineList dl = new DefineList();
                 Define d = new Define();
                 d.id = i;
@@ -89,7 +91,7 @@ CTELIST ::= identifier:i igual SIMPVALUE:sv punto_coma
                 f.varLists.add(v); // varLists puede tener varias varList, en este caso particular solo tendrá una (con varias variables)
                 RESULT = f;
             :}
-        | CTELIST:cl identifier igual SIMPVALUE:sv punto_coma
+        | CTELIST:cl identifier:id igual SIMPVALUE:sv punto_coma
             {: /*DefineList dl = cl;
                Define d = new Define();
                d.id = i;
@@ -136,7 +138,7 @@ DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
              | DEFVARLIST:dvl punto_coma VARLIST:vl dos_puntos TBAS:t {:
                     vl.tipo = t;
                     dvl.varLists.add(vl);
-                    RESULT = f;
+                    RESULT = dvl;
                     :} ;
 
 VARLIST ::= identifier:i
@@ -419,7 +421,7 @@ OPCOMP ::= lt  {:
         RESULT = new StringBuilder("<=");
     :}
     | bet {:
-        S/*imbolo s = new Simbolo();
+        /*Simbolo s = new Simbolo();
         s.valor = new StringBuilder(">=");
         RESULT = s;*/
         RESULT = new StringBuilder(">=");

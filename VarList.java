@@ -1,4 +1,5 @@
 import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class VarList {
 
