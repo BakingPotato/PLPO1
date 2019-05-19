@@ -38,26 +38,51 @@ public class Function {
 
 	public StringBuilder returnSB() {
 		StringBuilder r = new StringBuilder();
-		r.append(this.type).append(" ").append(this.name);
-		if (varLists.size() > 0) {
-			r.append(" ( ");
-			while (varLists.size() > 0) {
 
-				Deque<String> vars = varLists.peek().vars;
-				String tipo = varLists.pop().tipo;
-				if(!vars.isEmpty()) {
-					while(vars.size() > 0) {
-						r.append(tipo).append(" ").append(vars.pop()).append(", ");
+		if (this.isDef) {
+			Deque<String> vars = this.varLists.pop().vars;
+			while (!vars.isEmpty()) {
+				r.append("#defines ").append(vars.pop()).append("\n");
+			}
+			return r;
+		} else if (this.type == null) {
+			if (varLists.size() > 0) {
+				while (varLists.size() > 0) {
+
+					Deque<String> vars = varLists.peek().vars;
+					String tipo = varLists.pop().tipo;
+					if (!vars.isEmpty()) {
+						while (vars.size() > 0) {
+							r.append(tipo).append(" ").append(vars.pop()).append(";\n");
+						}
 					}
 				}
+				r.setLength(r.length() - 2);
+				r.append(" )\n{");
 			}
-			r.setLength(r.length()-2);
-			r.append(" )\n{");
+			return r;
 		} else {
-			r.append(" ( void )\n{");
+			r.append(this.type).append(" ").append(this.name);
+			if (varLists.size() > 0) {
+				r.append(" ( ");
+				while (varLists.size() > 0) {
+
+					Deque<String> vars = varLists.peek().vars;
+					String tipo = varLists.pop().tipo;
+					if(!vars.isEmpty()) {
+						while(vars.size() > 0) {
+							r.append(tipo).append(" ").append(vars.pop()).append(", ");
+						}
+					}
+				}
+				r.setLength(r.length()-2);
+				r.append(" )\n{");
+			} else {
+				r.append(" ( void )\n{");
+			}
+			r.append(bloque.returnSB());
+			r.append("\n}");
+			return r;
 		}
-		r.append(bloque.returnSB());
-		r.append("\n}");
-		return r;
 	}
 }

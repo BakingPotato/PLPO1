@@ -16,4 +16,33 @@ public class Bloque {
 		this.sentList = sentList;
 	}
 
+	public StringBuilder returnSB() {
+		StringBuilder r = new StringBuilder();
+
+		// print declaraciones
+		for (Function f : dclList) {
+			if (f.isDef) {
+				Deque<String> vars = f.varLists.pop().vars;
+				while (!vars.isEmpty()) {
+					r.append("#defines ").append(vars.pop()).append("\n");
+				}
+			} else {
+				r.append(f.returnSB());
+			}
+		}
+
+		// print sentencias
+		for (Sentencia s : sentList) {
+			if (s.isAsig) {
+				if (s.id.equals(this.id)) {
+					r.append("return ").append(s.valor);
+				}
+				r.append(s.id).append(" = ").append(s.valor);
+			} else {
+				r.append(s.id).append(" (").append(s.valor);
+			}
+		}
+		return r;
+	}
+
 }
