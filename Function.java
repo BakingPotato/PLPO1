@@ -7,11 +7,17 @@ public class Function {
 	public String type;
 	public String name;
 	public Bloque bloque;
+	public boolean isDef;
 
 	public Function() {
 		//this.varLists = new ArrayList<>();
 		this.varLists = new ArrayDeque<>();
 		this.bloque = new Bloque();
+	}
+
+	public Function(boolean def) {
+		this.varLists = new ArrayDeque<>();
+		this.isDef = def;
 	}
 
 	public StringBuilder print() {
@@ -36,11 +42,22 @@ public class Function {
 		if (varLists.size() > 0) {
 			r.append(" ( ");
 			while (varLists.size() > 0) {
-				r.append(varLists.pop());
+
+				Deque<String> vars = varLists.peek().vars;
+				String tipo = varLists.pop().tipo;
+				if(!vars.isEmpty()) {
+					while(vars.size() > 0) {
+						r.append(tipo).append(" ").append(vars.pop()).append(", ");
+					}
+				}
 			}
-			r.append(" ) ");
+			r.setLength(r.length()-2);
+			r.append(" )\n{");
 		} else {
-			r.append(" ( void ) ");
+			r.append(" ( void )\n{");
 		}
+		r.append(bloque.returnSB());
+		r.append("\n}");
+		return r;
 	}
 }

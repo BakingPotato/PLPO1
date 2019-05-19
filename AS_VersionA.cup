@@ -45,7 +45,9 @@ PRG ::= program identifier punto_coma BLQ:b punto  {:
                 :} ;           // Distinguir entre librerias y programas (opcional)
 
 BLQ ::= DCLLIST:d begin SENTLIST:s end {:
-                RESULT = d.append("\n\t{").append(s).append("}");
+                /*RESULT = d.append("\n\t{").append(s).append("}");*/
+                s.dclList = d.dclList;
+                RESULT = s;
             :} ;
 
 DCLLIST ::= /* lambda */ {:
@@ -67,27 +69,36 @@ SENTLIST ::= SENT:s  {:
             :} ;
 
 // Zona de declaraciones
-DCL ::= DEFCTE:d  {: RESULT = d.print(); :}
-      | DEFVAR:d  {: RESULT = d.print(); :}
+DCL ::= DEFCTE:d  {: RESULT = d; :}
+      | DEFVAR:d  {: RESULT = d; :}
       | DEFPROC:d {: RESULT = d; :}
       | DEFFUN:d  {: RESULT = d; :} ;
 
 DEFCTE ::= const_ CTELIST:cl {: RESULT = cl; :} ;
 
 CTELIST ::= identifier:i igual SIMPVALUE:sv punto_coma
-            {:  DefineList dl = new DefineList();
+            {:  /*DefineList dl = new DefineList();
                 Define d = new Define();
                 d.id = i;
                 d.sim = sv;
                 dl.defines.add(d);
-                RESULT = dl; :}
+                RESULT = dl;*/
+                VarList v = new VarList();
+                v.vars.add(id + " = " + sv.valor + ";");
+                Function f = new Function(true);
+                f.varLists.add(v); // varLists puede tener varias varList, en este caso particular solo tendrá una (con varias variables)
+                RESULT = f;
+            :}
         | CTELIST:cl identifier igual SIMPVALUE:sv punto_coma
-            {: DefineList dl = cl;
+            {: /*DefineList dl = cl;
                Define d = new Define();
                d.id = i;
                d.sim = sv;
                dl.defines.add(d);
-               RESULT = dl; :} ;
+               RESULT = dl; */
+                cl.varLists.peek().add(id + " = " + sv.valor + ";");
+                RESULT = cl;
+           :} ;
 
 SIMPVALUE ::= numeric_integer_const:i1
                 {:  Simbolo s = new Simbolo();
@@ -169,6 +180,7 @@ DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_c
                     /*StringBuilder s = new StringBuilder(t.valor).append(" ").append(i).append(fpl).append(";");
                     s.append(blq).append(";");
                     RESULT = s;*/
+                    blq.id = i;
                     fpl.type = t;
                     fpl.name = i;
                     fpl.bloque = blq;
