@@ -46,6 +46,14 @@ public class Function {
 
 		varLists.removeAll(toRemove);
 
+		// luego los var
+		for (VarList vl : varLists) {
+			if (this.type == null) {
+				r.append(vl.returnSBVar());
+				toRemove.add(vl);
+			}
+		}
+
 		// despues las funciones
 		r.append(this.type).append(" ").append(this.name).append(" ( ");
 		StringBuilder params = new StringBuilder();

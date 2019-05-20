@@ -90,7 +90,7 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
                 dl.defines.add(d);
                 RESULT = dl;*/
                 VarList v = new VarList();
-                v.vars.add(id + sv.valor + ";");
+                v.vars.add(id + " " + sv.valor);
                 v.isDef = true;
                 Function f = new Function();
                 f.varLists.add(v); // varLists puede tener varias varList, en este caso particular solo tendrá una (con varias variables)
@@ -104,7 +104,8 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
                dl.defines.add(d);
                RESULT = dl; */
                 VarList v = new VarList();
-                v.vars.add(id + " = " + sv.valor + ";");
+                v.vars.add(id + " " + sv.valor);
+                v.isDef = true;
                 cl.varLists.add(v);
                 RESULT = cl;
            :} ;
