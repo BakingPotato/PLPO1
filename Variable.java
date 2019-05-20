@@ -8,7 +8,7 @@ public class Variable {
     public StringBuilder sim; // Para las constantes sera el valor y para variables el tipo
 
     public Variable(){
-        id = new StringBuilder();
+         id = new StringBuilder();
         sim = new StringBuilder();
     }
 }

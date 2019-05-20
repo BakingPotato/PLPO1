@@ -3,6 +3,7 @@ import java.util.Deque;
 
 public class Bloque {
 
+	public boolean isMain;
 	public ArrayList<Function> dclList;
 	public ArrayList<Sentencia> sentList;
 	public String id;
@@ -13,12 +14,14 @@ public class Bloque {
 	}
 
 	public Bloque (ArrayList dclList, ArrayList sentList) {
+		this.isMain = false;
 		this.dclList = dclList;
 		this.sentList = sentList;
 	}
 
 	public StringBuilder returnSB() {
 		StringBuilder r = new StringBuilder("\n{\n");
+
 
 		// print declaraciones
 		for (Function f : dclList) {

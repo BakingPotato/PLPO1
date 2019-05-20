@@ -74,6 +74,7 @@ public class Function {
 		} else {
 			r.append(bloque.returnSB(name));
 		}
+		r.append("\n}\n");
 		return r;
 
 		// quedan las declaraciones de variables dentro de varLists

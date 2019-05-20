@@ -11,7 +11,7 @@ public class VarList {
 
 	public VarList() {
 		//this.vars = new ArrayDeque<>();
-		this.vars = new ArrayDeque<String>();
+		 this.vars = new ArrayDeque<String>();
 	}
 
 	public StringBuilder returnSBFun() {

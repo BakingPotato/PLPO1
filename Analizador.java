@@ -1,7 +1,7 @@
 import java.io.IOException;
 /**
 */
-public class Analizador{
+ public class Analizador{
     public static void main(String argv[]) {
         if (argv.length == 0) {
             System.out.println("Inserta nombre de archivo\n"+"( Usage : java Analizador <inputfile> )");

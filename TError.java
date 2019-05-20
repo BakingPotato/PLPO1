@@ -5,7 +5,7 @@ public class TError {
     public TError(String lex, int lin, int col, String tip,String desc){
         lexema = lex;
         linea = lin;
-        columna = col;
+         columna = col;
         tipo = tip;
         descripcion = desc;
     }

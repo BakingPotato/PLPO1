@@ -5,6 +5,6 @@ public class Incremento {
 
 	public Incremento(char op, String valor) {
 		this.op = op;
-		this.valor = valor;
+		 this.valor = valor;
 	}
 }

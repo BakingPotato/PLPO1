@@ -72,10 +72,10 @@ SENTLIST ::= SENT:s {:
             :} ;
 
 // Zona de declaraciones
-DCL ::= DEFCTE:d  {: RESULT = d; :}
-      | DEFVAR:d  {: RESULT = d; :}
-      | DEFPROC:d {: RESULT = d; :}
-      | DEFFUN:d  {: RESULT = d; :} ;
+DCL ::= DEFCTE:d  {: d.isConst = true; RESULT = d; :}
+      | DEFVAR:d  {: d.isVar = true; RESULT = d; :}
+      | DEFPROC:d {: d.isProc = true; RESULT = d; :}
+      | DEFFUN:d  {: d.isFun = true; RESULT = d; :} ;
 
 DEFCTE ::= const_ CTELIST:cl {: RESULT = cl; :} ;
 
@@ -98,7 +98,7 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma {:
 SIMPVALUE ::= numeric_integer_const:i1 {:
                 Simbolo s = new Simbolo();
                 s.tipo = Simbolo.TipoSim.T_INTEGER;
-                s.valor = new StringBuilder(i1);
+                 s.valor = new StringBuilder(i1);
                 RESULT = s; :}
             | numeric_real_const:r1 {:
                 Simbolo s = new Simbolo();

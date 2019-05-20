@@ -16,7 +16,7 @@ public class Simbolo {
     }
 
     public Simbolo(String string) {
-        this.valor = new StringBuilder(string);
+         this.valor = new StringBuilder(string);
     }
 
 }

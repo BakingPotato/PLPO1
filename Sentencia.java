@@ -1,5 +1,6 @@
 public class Sentencia{
 
+    public boolean isMain;
     public StringBuilder valor;
     public StringBuilder id;
     public boolean isAsig;
