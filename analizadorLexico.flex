@@ -9,7 +9,7 @@ import java_cup.runtime.*;
 %cupsym sym
 %cup
 
-%state STRING
+%xstate STRING
 
 /* Raw Java code */
 %{
