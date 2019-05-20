@@ -41,7 +41,7 @@ precedence left not;
 start with PRG;
 
 PRG ::= program identifier punto_coma BLQ:blq punto  {:
-                System.out.print(blq.returnSB());
+                System.out.print(blq.returnSB()); //llamamos a returnSB sin argumento porque no es una función
                 :}
       | unit identifier:id punto_coma DCLLIST:dl punto {:
                 StringBuilder s = new StringBuilder("// Librería: ").append(id).append("\n").append(dl);
@@ -58,18 +58,20 @@ DCLLIST ::= /* lambda */ {:
                 RESULT = new Bloque();
             :} | DCLLIST:dl DCL:d {:
                 dl.dclList.add(d);
+                RESULT = dl;
                 :};
 
 SENTLIST ::= SENT:s  {:
                 /*RESULT = s.valor;*/
-                Bloque b = new Bloque();
-                b.sentList.add(s);
-                RESULT = b;
+                RESULT = s;
                 :}
            | SENTLIST:sl SENT:s {:
                 /*RESULT = sl.append(sl).append(" ").append(s);*/
-                sl.sentList.add(s);
+                for (Sentencia sen : s.sentList) {
+                    sl.sentList.add(sen);
+                }
                 RESULT = sl;
+
             :} ;
 
 // Zona de declaraciones
@@ -89,7 +91,8 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
                 RESULT = dl;*/
                 VarList v = new VarList();
                 v.vars.add(id + " = " + sv.valor + ";");
-                Function f = new Function(true);
+                v.isDef = true;
+                Function f = new Function();
                 f.varLists.add(v); // varLists puede tener varias varList, en este caso particular solo tendrá una (con varias variables)
                 RESULT = f;
             :}
@@ -102,7 +105,7 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
                RESULT = dl; */
                 VarList v = new VarList();
                 v.vars.add(id + " = " + sv.valor + ";");
-                cl.varLists.addLast(v);
+                cl.varLists.add(v);
                 RESULT = cl;
            :} ;
 
@@ -157,9 +160,8 @@ VARLIST ::= identifier:i
             {:  /*Funcion f = vl;
                 f.paramList.add(new Variable().id.append(i));
                 RESULT = f;*/
-                VarList v = vl;
-                v.vars.push(i);
-                RESULT = v;
+                vl.vars.push(i);
+                RESULT = vl;
              :} ;
 
 DEFPROC ::=  procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:blq punto_coma
@@ -208,7 +210,7 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                     RESULT = f;*/
                     vl.tipo = t.valor.toString();
                     Function f = new Function();
-                    f.varLists.push(vl);
+                    f.varLists.addFirst(vl);
                     RESULT = f;
                  :}
                | VARLIST:vl dos_puntos TBAS:t punto_coma FORMAL_PARAM:fp
@@ -219,7 +221,7 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                    f.paramList.addAll(fp.paramList); // Anadimos los demas parametros de otros tipos
                    RESULT = f; */
                    vl.tipo = t.valor.toString();
-                   fp.varLists.push(vl);
+                   fp.varLists.addFirst(vl);
                    RESULT = fp;
                    :};
 

@@ -22,11 +22,20 @@ public class Sentencia{
         StringBuilder r = new StringBuilder();
         if (isAsig) {
             if (id.equals(idGlobal))
-                r.append("return ").append(valor);
+                r.append("return ").append(valor).append("\n");
             else
-                r.append(id).append(" = ").append(valor);
+                r.append(id).append(" = ").append(valor).append("\n");
         } else
-            r.append(id).append(" (").append(valor).append(")");
+            r.append(id).append(" (").append(valor).append(");\n");
+        return r;
+    }
+
+    public StringBuilder returnSB() {
+        StringBuilder r = new StringBuilder();
+        if (isAsig)
+            r.append(id).append(" = ").append(valor).append("\n");
+        else
+            r.append(id).append(" (").append(valor).append(");\n");
         return r;
     }
 }

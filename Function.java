@@ -5,30 +5,24 @@ import java.util.ArrayDeque;
 public class Function {
 
 	//public ArrayList<VarList> varLists;
-	public Deque<VarList> varLists;
+	public ArrayList<VarList> varLists;
 	public String type;
 	public String name;
 	public Bloque bloque;
-	public boolean isDef;
 
 	public Function() {
 		//this.varLists = new ArrayList<>();
-		this.varLists = new ArrayDeque<>();
+		this.varLists = new ArrayList<>();
 		this.bloque = new Bloque();
 	}
 
-	public Function(boolean def) {
-		this.varLists = new ArrayDeque<>();
-		this.isDef = def;
-	}
-
-	public StringBuilder print() {
+	/*public StringBuilder print() {
 		StringBuilder r = new StringBuilder();
-		/*for (VarList vl : this.varLists) {
+		*//*for (VarList vl : this.varLists) {
 			for (String v : vl.vars) {
 				r.append(vl.tipo).append(" ").append(v).append(", ");
 			}
-		}*/
+		}*//*
 		for (VarList vl : this.varLists) {
 			for (String v : vl.vars) {
 				r.append(vl.tipo).append(" ").append(v).append(", ");
@@ -36,17 +30,46 @@ public class Function {
 		}
 		r.setLength(r.length()-2);
 		return r;
-	}
+	}*/
 
 	public StringBuilder returnSB() {
 		StringBuilder r = new StringBuilder();
 
-		if (this.isDef) {
-			Deque<String> vars = this.varLists.pop().vars;
-			while (!vars.isEmpty()) {
-				r.append("#defines ").append(vars.pop()).append("\n");
+		// primero tiene que imprimir los define
+		for (VarList vl : varLists) {
+			if (vl.isDef) {
+				r.append(vl.returnSBDef());
+				varLists.remove(vl);
 			}
-			return r;
+		}
+
+		// despues las funciones
+		r.append(this.type).append(" ").append(this.name).append(" ( ");
+		StringBuilder params = new StringBuilder();
+		for (VarList vl : varLists) {
+			if (vl.isFun) {
+				params.append(vl.returnSBFun());
+				varLists.remove(vl);
+			}
+		}
+		if (!params.isEmpty())
+			r.append(params).append(" ) ");
+		else
+			r.append("void )");
+		// hasta aqui la cabecera
+		// ahora el bloque
+		if (name == null || type.equals("void")) {
+			r.append(bloque.returnSB());
+		} else {
+			r.append(bloque.returnSB(name));
+		}
+
+		// quedan las declaraciones de variables dentro de varLists
+
+		/*if (this.isDef) {
+			//Deque<String> vars = this.varLists.pop().vars;
+
+			return this.;
 		} else if (this.type == null) {
 			if (varLists.size() > 0) {
 				while (varLists.size() > 0) {
@@ -85,6 +108,6 @@ public class Function {
 			r.append(bloque.returnSB());
 			r.append("\n}");
 			return r;
-		}
+		}*/
 	}
 }

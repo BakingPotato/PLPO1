@@ -15,7 +15,7 @@ public class DefineList {
     public StringBuilder print(){
         StringBuilder toReturn = new StringBuilder();
         for ( Variable d : defines ) {
-            toReturn.append("#define ").append(d.id).append(" ").append(d.sim.valor).append("\n");
+            toReturn.append("#define ").append(d.id).append(" ").append(d.sim).append("\n");
         }
         return toReturn;
     }
