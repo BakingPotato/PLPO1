@@ -17,4 +17,14 @@ public class Sentencia{
     public Sentencia(StringBuilder valor) {
         this.valor = valor;
     }
+
+    public returnSB(String idGlobal) {
+        if (isAsig) {
+            if (id.equals(idGlobal))
+                r.append("return ").append(valor);
+            else
+                r.append(id).append(" = ").append(valor);
+        } else
+            r.append(id).append(" (").append(valor).append(")");
+    }
 }
