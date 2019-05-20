@@ -36,7 +36,7 @@ public class VarList {
 	public StringBuilder returnSBDef() {
 		StringBuilder r = new StringBuilder();
 		for (String v : vars) {
-			r.append("#defines ").append(v).append(";\n");
+			r.append("#define ").append(v).append(";\n");
 		}
 		return r;
 	}

@@ -65,7 +65,7 @@ SENTLIST ::= SENT:s  {:
                 /*RESULT = s.valor;*/
                 Bloque b = new Bloque();
                 b.sentList.add(s);
-                RESULT = s;
+                RESULT = b;
                 :}
            | SENTLIST:sl SENT:s {:
                 /*RESULT = sl.append(sl).append(" ").append(s);*/
@@ -90,7 +90,7 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma
                 dl.defines.add(d);
                 RESULT = dl;*/
                 VarList v = new VarList();
-                v.vars.add(id + " = " + sv.valor + ";");
+                v.vars.add(id + sv.valor + ";");
                 v.isDef = true;
                 Function f = new Function();
                 f.varLists.add(v); // varLists puede tener varias varList, en este caso particular solo tendrá una (con varias variables)
@@ -303,7 +303,7 @@ EXP ::= EXP:e1 OP:op EXP:e2 {:
         e.valor.append(exp1.valor+" "+op.valor+" "+exp2.valor);
         RESULT = e;*/
 
-        e1.valor.append(" ").append(op).append(" ").append(e2);
+        e1.valor.append(" ").append(op.valor).append(" ").append(e2.valor);
         RESULT = e1;
     :}
     | FACTOR:fact {:

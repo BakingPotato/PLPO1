@@ -18,7 +18,7 @@ public class Bloque {
 	}
 
 	public StringBuilder returnSB() {
-		StringBuilder r = new StringBuilder();
+		StringBuilder r = new StringBuilder("\n{\n");
 
 		// print declaraciones
 		for (Function f : dclList) {
@@ -29,11 +29,11 @@ public class Bloque {
 		for (Sentencia s : sentList) {
 			r.append(s.returnSB());
 		}
-		return r;
+		return r.append("\n}\n");
 	}
 
 	public StringBuilder returnSB(String idGlobal) {
-		StringBuilder r = new StringBuilder();
+		StringBuilder r = new StringBuilder("\n{\n");
 
 		// print declaraciones
 		for (Function f : dclList) {
@@ -64,7 +64,7 @@ public class Bloque {
 				r.append(s.id).append(" (").append(s.valor);
 			}
 		}*/
-		return r;
+		return r.append("\n}\n");
 	}
 
 }
