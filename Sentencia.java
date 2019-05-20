@@ -18,7 +18,8 @@ public class Sentencia{
         this.valor = valor;
     }
 
-    public returnSB(String idGlobal) {
+    public StringBuilder returnSB(String idGlobal) {
+        StringBuilder r = new StringBuilder();
         if (isAsig) {
             if (id.equals(idGlobal))
                 r.append("return ").append(valor);
@@ -26,5 +27,6 @@ public class Sentencia{
                 r.append(id).append(" = ").append(valor);
         } else
             r.append(id).append(" (").append(valor).append(")");
+        return r;
     }
 }

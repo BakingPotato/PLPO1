@@ -9,7 +9,7 @@ import java_cup.runtime.*;
 %cupsym sym
 %cup
 
-%xstate STRING
+%state STRING
 
 /* Raw Java code */
 %{
@@ -26,16 +26,14 @@ import java_cup.runtime.*;
 /* Macros */
 
 LineTerminator = \r|\n|\r\n
-Blank = {LineTerminator} | [ \t] //Arreglar para que reconozca espacios y saltos de lineas
-InputCharacter = [^\r\n]
+WhiteSpace     = {LineTerminator} | [ \t\f]
 Alphabet = [a-z|A-Z]
 Digit = [0-9]
 Digits = {Digit}+
-Underscore = "_"
 Sign = [+-]
 Exp = "e"|"E"
 
-Identifier = ({Alphabet} | {Digit} | {Underscore})+
+Identifier = {Alphabet} ({Alphabet} | {Digit} | "_")*
 
 Numeric_real_fixed_point_const = {Digits} "." {Digits}
 Numeric_real_exponential_const = {Digits} {Exp} {Sign}? {Digits}
@@ -47,8 +45,11 @@ Numeric_real_const = {Numeric_real_fixed_point_const}
                    | {Numeric_real_mixed_const}
 
 StringCharacter = [^\r\n\'\\]
+
 SingleLineComment = "{" [^}\r\n] ~"}"
 MultipleLineComment = "(*" [^*] ~"*)"
+
+Comment = {SingleLineComment} | {MultipleLineComment}
 
 %%
 
@@ -99,12 +100,14 @@ MultipleLineComment = "(*" [^*] ~"*)"
 
 /* no se de expr regulares jeje revisen */
 {Identifier}	                    { return symbol(sym.identifier, yytext()); }
-{Numeric_integer_const}		        { return symbol(sym.numeric_integer_const, new Integer(yytext())); }
-{Numeric_real_fixed_point_const}    { return symbol(sym.numeric_real_const, new Float(yytext())); }
-{Numeric_real_exponential_const}    { return symbol(sym.numeric_real_const, new Long(yytext())); }
-{Numeric_real_mixed_const}          { return symbol(sym.numeric_real_const, new Long(yytext())); }
-{Blank}                             { }
-"'"                                 { yybegin(STRING); string.setLength(0); }
+{Numeric_integer_const}		        { return symbol(sym.numeric_integer_const, yytext()); }
+{Numeric_real_fixed_point_const}    { return symbol(sym.numeric_real_const, yytext()); }
+{Numeric_real_exponential_const}    { return symbol(sym.numeric_real_const, yytext()); }
+{Numeric_real_mixed_const}          { return symbol(sym.numeric_real_const, yytext()); }
+{WhiteSpace}                        { /* ignore */ }
+{Comment}                           { /* ignore */ }
+
+\'                                  { string.setLength(0); yybegin(STRING); }
 // [^"*)"] esto se supone que va con algo
 
 
@@ -113,7 +116,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
     /* Para que aparezca una comilla simple como contenido debe ir precedida de otra */
     "''"                { string.append("'"); }
 
-    "'"                 { yybegin(YYINITIAL); return symbol(sym.string_const, string.toString()); }
+    \'                 { yybegin(YYINITIAL); return symbol(sym.string_const, string.toString()); }
 
     {StringCharacter}+  { string.append( yytext() ); }
 
