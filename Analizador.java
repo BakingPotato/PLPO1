@@ -11,6 +11,7 @@ public class Analizador{
                 try {
                     lexico = new AnalizadorLexico( new java.io.FileReader(argv[i]));
                     parser sintactico = new parser(lexico);
+                    sintactico.fileName = argv[i].substring(0, argv[i].length()-4);
                     sintactico.parse();
                 } catch (java.io.FileNotFoundException e) {
                     System.out.println("Archivo \""+argv[i]+"\" no encontrado.");

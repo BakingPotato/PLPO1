@@ -2,7 +2,7 @@ import java_cup.runtime.*;
 import java.util.LinkedList;
 
 parser code {: //Tratamiento de errores
-
+public String fileName;
 public void syntax_error (Symbol s){
 	System.err.println("Error de sintaxis (lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
 	System.err.println("Error recuperado");
@@ -188,24 +188,24 @@ SENT ::= ASIG:a punto_coma  {:
     :}
     | if_ EXPCOND:ec then BLQ:blq1 else_ BLQ:blq2 {:
         Sentencia e = new Sentencia();
-        e.valor.append("if("+ec.valor+")"+blq1+"else"+blq2);
+        e.valor.append("if("+ec.valor+")"+blq1.returnSB()+"else"+blq2.returnSB());
         RESULT = e;
     :}
     | while_ EXPCOND:ec do_ BLQ:blq  {:
         Sentencia e = new Sentencia();
-        e.valor.append("while(").append(ec.valor).append(")\n").append(blq);
+        e.valor.append("while(").append(ec.valor).append(")\n").append(blq.returnSB());
         RESULT = e;
     :}
     | repeat BLQ:blq until EXPCOND:ec punto_coma  {:
         Sentencia e = new Sentencia();
-        e.valor.append("do\n").append(blq).append("\nuntil(").append(ec.valor).append(")");
+        e.valor.append("do\n").append(blq.returnSB()).append("\nuntil(").append(ec.valor).append(")");
         RESULT = e;
     :}
     | bucle_for identifier:id dos_p_igual EXP:exp1 INC:inc EXP:exp2 do_ BLQ:blq  {:
         Sentencia s = new Sentencia();
         s.valor.append("for (").append(id).append("=").append(exp1.valor).append("; ").append(id).append(inc.op);
         s.valor.append(exp2.valor).append(inc.valor).append("; ").append(id).append("=").append(id).append(inc.valor).append(")");
-        s.valor.append("\n{").append(blq).append("}");
+        s.valor.append(blq.returnSB());
         RESULT = s;
     :};
 
