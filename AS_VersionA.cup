@@ -287,7 +287,7 @@ INC ::= to {:
     :};
 
 ASIG ::= ID:id dos_p_igual EXP:exp {:
-        StringBuilder valor = new StringBuilder(" ::= ").append(exp.valor);
+        StringBuilder valor = new StringBuilder(exp.valor);
         RESULT = new Sentencia(id.valor, valor, true);
     :};
 
