@@ -26,7 +26,7 @@ import java_cup.runtime.*;
 /* Macros */
 
 LineTerminator = \r|\n|\r\n
-Blank = {LineTerminator} | [ ] //Arreglar para que reconozca espacios y saltos de lineas
+Blank = {LineTerminator} | [ \t] //Arreglar para que reconozca espacios y saltos de lineas
 InputCharacter = [^\r\n]
 Alphabet = [a-z|A-Z]
 Digit = [0-9]
@@ -65,13 +65,13 @@ MultipleLineComment = "(*" [^*] ~"*)"
 ":="        { return symbol(sym.dos_p_igual); }
 "("         { return symbol(sym.ab_parentesis); }
 ")"         { return symbol(sym.cr_parentesis); }
-"PROGRAM"   { return symbol(sym.program); }
-"BEGIN"     { return symbol(sym.begin); }
-"END"       { return symbol(sym.end); }
+"program"   { return symbol(sym.program); }
+"begin"     { return symbol(sym.begin); }
+"end"       { return symbol(sym.end); }
 "const"     { return symbol(sym.const_); }
 "var"       { return symbol(sym.var); }
-"PROCEDURE" { return symbol(sym.procedure); }
-"FUNCTION"  { return symbol(sym.function); }
+"procedure" { return symbol(sym.procedure); }
+"function"  { return symbol(sym.function); }
 "INTEGER"   { return symbol(sym.integer); }
 "REAL"      { return symbol(sym.real); }
 "div"       { return symbol(sym.div); }
@@ -95,7 +95,6 @@ MultipleLineComment = "(*" [^*] ~"*)"
 "until"     { return symbol(sym.until); }
 "to"        { return symbol(sym.to); }
 "downto"    { return symbol(sym.downto); }
-
 "unit"      { return symbol(sym.unit); }
 
 /* no se de expr regulares jeje revisen */
@@ -104,7 +103,7 @@ MultipleLineComment = "(*" [^*] ~"*)"
 {Numeric_real_fixed_point_const}    { return symbol(sym.numeric_real_const, new Float(yytext())); }
 {Numeric_real_exponential_const}    { return symbol(sym.numeric_real_const, new Long(yytext())); }
 {Numeric_real_mixed_const}          { return symbol(sym.numeric_real_const, new Long(yytext())); }
-{Blank} { }
+{Blank}                             { }
 "'"                                 { yybegin(STRING); string.setLength(0); }
 // [^"*)"] esto se supone que va con algo
 
