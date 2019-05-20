@@ -35,13 +35,16 @@ public class Function {
 	public StringBuilder returnSB() {
 		StringBuilder r = new StringBuilder();
 
+		ArrayList<VarList> toRemove = new ArrayList<>();
 		// primero tiene que imprimir los define
 		for (VarList vl : varLists) {
 			if (vl.isDef) {
 				r.append(vl.returnSBDef());
-				varLists.remove(vl);
+				toRemove.add(vl);
 			}
 		}
+
+		varLists.removeAll(toRemove);
 
 		// despues las funciones
 		r.append(this.type).append(" ").append(this.name).append(" ( ");
