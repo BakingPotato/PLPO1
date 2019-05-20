@@ -65,13 +65,11 @@ SENTLIST ::= SENT:s  {:
                 /*RESULT = s.valor;*/
                 Bloque b = new Bloque();
                 b.sentList.add(s);
-                RESULT = b;
+                RESULT = s;
                 :}
            | SENTLIST:sl SENT:s {:
                 /*RESULT = sl.append(sl).append(" ").append(s);*/
-                for (Sentencia sen : s.sentList) {
-                    sl.sentList.add(sen);
-                }
+                sl.sentList.add(s);
                 RESULT = sl;
 
             :} ;
