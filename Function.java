@@ -52,7 +52,7 @@ public class Function {
 				varLists.remove(vl);
 			}
 		}
-		if (!params.isEmpty())
+		if (params.length() != 0)
 			r.append(params).append(" ) ");
 		else
 			r.append("void )");

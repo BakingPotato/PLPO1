@@ -19,7 +19,9 @@ public class VarList {
 		for (String v : vars) {
 			r.append(tipo).append(" ").append(v).append(", ");
 		}
-		r.setLength(r.length() - 2).append(" ; ");
+		if (!vars.isEmpty())
+			r.setLength(r.length() - 2);
+		r.append(" ; ");
 		return r;
 	}
 

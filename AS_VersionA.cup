@@ -63,7 +63,9 @@ DCLLIST ::= /* lambda */ {:
 
 SENTLIST ::= SENT:s  {:
                 /*RESULT = s.valor;*/
-                RESULT = s;
+                Bloque b = new Bloque();
+                b.sentList.add(s);
+                RESULT = b;
                 :}
            | SENTLIST:sl SENT:s {:
                 /*RESULT = sl.append(sl).append(" ").append(s);*/
@@ -210,7 +212,7 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                     RESULT = f;*/
                     vl.tipo = t.valor.toString();
                     Function f = new Function();
-                    f.varLists.addFirst(vl);
+                    f.varLists.add(0, vl);
                     RESULT = f;
                  :}
                | VARLIST:vl dos_puntos TBAS:t punto_coma FORMAL_PARAM:fp
@@ -221,7 +223,7 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t
                    f.paramList.addAll(fp.paramList); // Anadimos los demas parametros de otros tipos
                    RESULT = f; */
                    vl.tipo = t.valor.toString();
-                   fp.varLists.addFirst(vl);
+                   fp.varLists.add(0, vl);
                    RESULT = fp;
                    :};
 
