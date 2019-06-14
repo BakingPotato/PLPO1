@@ -73,7 +73,7 @@ SENTLIST ::= SENT:s {:
                     f.declaraciones.add(s);
                 else if (s.esControlFlujo){
                     if (!s.declaraciones.isEmpty())
-                        f.declaraciones.addAll(s.declaraciones);
+                        f.declaraciones.addAll(s.sentList);
                     f.bloque.add(s);
                 }else{
                     f.bloque.add(s);
@@ -87,7 +87,7 @@ SENTLIST ::= SENT:s {:
                     listaS.declaraciones.add(s);
                 }else if (s.esControlFlujo){
                     if (!s.declaraciones.isEmpty()){
-                        listaS.declaraciones.addAll(s.declaraciones);
+                        listaS.declaraciones.addAll(s.sentList);
                     }
                     listaS.bloque.add(s);
                 }else{

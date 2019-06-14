@@ -7,16 +7,20 @@ public class Simbolo {
         T_STRING
     }
 
-    public TipoSim tipo;
-    public StringBuilder valor;
-    public StringBuilder signo;
+    public TipoSim tipo_enum;
+    public String valor; //id, operacion, operacionC, operacionL, negacion, parentesis, tipo, coma, PyC, asignacion;
+    public boolean esId, esOperacion, esOperacionC, esOperacionL, esNegacion, esParentesis, esTipo, esComa, esPyC, esAsignacion;
 
     public Simbolo(){
-        valor = new StringBuilder();
-    }
+        /*id = new String();  operacion = new String();
+        operacionC = new String();  operacionL = new String(); negacion = new String();
+        parentesis = new String();  tipo = new String();
+        coma = new String(); PyC = new String();    asignacion = new String();*/
+        valor = new String();
 
-    public Simbolo(String string) {
-         this.valor = new StringBuilder(string);
+        esId = false;   esOperacion = false;
+        esOperacionC = false;   esOperacionL = false; esNegacion = false;
+        esParentesis = false;   esTipo = false;
+        esComa = false; esPyC = false;  esAsignacion = false;
     }
-
 }
