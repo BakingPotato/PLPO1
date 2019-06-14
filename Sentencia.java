@@ -1,5 +1,39 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Sentencia{
 
+    public List<Sentencia> sentList;
+    public List<Simbolo> simbolos;
+    public int n_sent;
+    public boolean declaración;
+    public boolean controlFlujo;
+    public int tabs;
+
+    public Sentencia() {
+        this.sentList = new ArrayList<>();
+        this.simbolos = new ArrayList<>();
+        this.n_sent = 0;
+        this.declaración = false;
+        this.controlFlujo = false;
+        this.tabs = 0;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
     public boolean isMain;
     public StringBuilder valor;
     public StringBuilder id;
@@ -27,7 +61,7 @@ public class Sentencia{
             else
                 r.append(id).append(" = ").append(valor).append("\n");
         } else
-            r.append(id).append(" (").append(valor).append(");\n");
+            r.append(valor).append(")--;\n");
         return r;
     }
 
@@ -36,7 +70,7 @@ public class Sentencia{
         if (isAsig)
             r.append(id).append(" = ").append(valor).append("\n");
         else
-            r.append(id).append(" (").append(valor).append(");\n");
+            r.append(valor).append(")...;\n");
         return r;
-    }
+    }*/
 }

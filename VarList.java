@@ -33,6 +33,14 @@ public class VarList {
 		return r;
 	}
 
+	public StringBuilder returnSBVl() {
+		StringBuilder r = new StringBuilder();
+		for (String v : vars) {
+			r.append(tipo).append(" ").append(v).append(";");
+		}
+		return r;
+	}
+
 	public StringBuilder returnSBDef() {
 		StringBuilder r = new StringBuilder();
 		for (String v : vars) {

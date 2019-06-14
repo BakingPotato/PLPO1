@@ -48,11 +48,13 @@ PRG ::= program identifier punto_coma BLQ:blq punto  {:
             System.out.print(s.append(dl.returnSB()));
         :}; */
 //No terminado
-BLQ ::= DCLLIST:d begin SENTLIST:s end {:
-            Programa p = new Programa();
-            p.declaraciones = p1.declaraciones;
-            p.funciones = p2.funciones;
-            RESULT = p;
+BLQ ::= DCLLIST:dcl begin SENTLIST:sl end {:
+            Funcion blq = new Funcion();
+            blq.cabecera = dcl.cabecera;
+            blq.declaraciones = dcl.declaraciones;
+            blq.bloque.addAll(dcl.bloque);
+            blq.bloque.addAll(sl.bloque);
+            RESULT = blq;
         :} ;
 //No terminado
 DCLLIST ::= /* lambda */ {:
@@ -65,7 +67,7 @@ DCLLIST ::= /* lambda */ {:
 
 SENTLIST ::= SENT:s {:
                 Funcion f = new Funcion();
-                Programa.contadorSentencias++;
+                Proegrama.contadorSentencias++;
                 s.numeroSent = Programa.contadorSent;
                 if (s.esDeclaracion)
                     f.declaraciones.add(s);
@@ -100,99 +102,193 @@ DCL ::= DEFCTE:d  {: RESULT = d; :}
       | DEFVAR:d  {: RESULT = d; :}
       | DEFPROC:d {: RESULT = d; :}
       | DEFFUN:d  {: RESULT = d; :} ;
-//No terminado
-DEFCTE ::= const_ CTELIST:cl {: RESULT = cl; :} ;
 
-//No terminado
+//No seguro
+DEFCTE ::= const_ CTELIST:cl {:
+         Funcion f = new Funcion();
+
+         f.declaraciones.add(cl);
+         RESULT = f;
+    :} ;
+
+
 CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma {:
-                VarList v = new VarList();
-                v.vars.add(id + " " + sv.valor);
-                v.isDef = true;
-                Function f = new Function();
-                f.varLists.add(v); // varLists puede tener varias varList, en este caso particular solo tendrá una (con varias variables)
-                RESULT = f;
+                Sentencia cteList = new Sentencia();
+                Simbolo i = new Simbolo();
+                i.valor = id;
+                Simbolo define = new Simbolo();
+                define.valor = "#define";
+
+                cteList.simbolos.add(define);
+                cteList.simbolos.add(i);
+                cteList.simbolos.add(sv);
+
+                RESULT = cteList;
             :}
             | CTELIST:cl identifier:id igual SIMPVALUE:sv punto_coma {:
-                VarList v = new VarList();
-                v.vars.add(id + " " + sv.valor);
-                v.isDef = true;
-                cl.varLists.add(v);
+                Simbolo i = new Simbolo();
+                i.valor = id;
+                Simbolo define = new Simbolo();
+                define.valor = "#define";
+
+                cteList.simbolos.add(define);
+                cl.simbolos.add(i);
+                cl.simbolos.add(sv);
+
                 RESULT = cl;
             :} ;
 
-//No terminado
 SIMPVALUE ::= numeric_integer_const:i1 {:
                 Simbolo s = new Simbolo();
-                s.tipo = Simbolo.TipoSim.T_INTEGER;
-                 s.valor = new StringBuilder(i1);
+                s.valor = new StringBuilder(i1);
                 RESULT = s; :}
             | numeric_real_const:r1 {:
                 Simbolo s = new Simbolo();
-                s.tipo = Simbolo.TipoSim.T_FLOAT;
                 s.valor = new StringBuilder(r1);
                 RESULT = s; :}
-            | string_const:s1 {:  Simbolo s = new Simbolo();
-                s.tipo = Simbolo.TipoSim.T_STRING;
+            | string_const:s1 {:
+                Simbolo s = new Simbolo();
                 s.valor = new StringBuilder(s1);
                 RESULT = s;
             :} ;
 
-//No terminado
-DEFVAR ::= var DEFVARLIST:d punto_coma {: RESULT = d; :} ;
+DEFVAR ::= var DEFVARLIST:d punto_coma {:
+                Funcion f = new Funcion();
+                f.declaraciones.addAll(d.sentList);
 
-//No terminado
-DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
-                v.tipo = t.valor.toString();
-                Function f = new Function();
-                f.varLists.add(v);
                 RESULT = f;
+            :} ;
+
+DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
+                Sentencia sv = new Sentencia();
+                Sentencia s2 = new Sentencia();
+                Simbolo simba = new Simbolo();
+                simba.valor = ";";
+                sv.simbolos.add(t);
+                sv.simbolos.addAll(v.simbolos);
+                sv.simbolos.add(simba);
+                s2.sentList.add(sv);
+
+                RESULT = s2;
             :}
             | DEFVARLIST:dvl punto_coma VARLIST:vl dos_puntos TBAS:t {:
-                vl.tipo = t.valor.toString();
-                dvl.varLists.add(vl);
+                Sentencia sv = new Sentencia();
+                Simbolo simba = new Simbolo();
+                simba.valor = ";";
+                sv.simbolos.add(t);
+                sv.simbolos.addAll(v.simbolos);
+                sv.simbolos.add(simba);
+                dvl.sentList.add(sv);
+
                 RESULT = dvl;
             :} ;
 
-//No terminado
 VARLIST ::= identifier:i {:
-                VarList vl = new VarList();
-                vl.vars.push(i);
-                RESULT = vl;
+                Simbolo s = new Simbolo();
+                s.esId = true;
+                s.id = i;
+
+                Sentencia sent = new Sentencia();
+                sent.simbolos.add(s);
+                RESULT = sent;
             :}
             | identifier:i coma VARLIST:vl {:
-                vl.vars.push(i);
-                RESULT = vl;
+                Simbolo s = new Simbolo();
+                s.esId = true;
+                s.valor = i;
+
+                Simbolo sc = new Simbolo();
+                sc.esComa = true;
+                sc.valor = ",";
+
+                Sentencia sent = new Sentencia();
+                sent.simbolos.add(s);
+                sent.simbolos.addAll(vl.simbolos);
+                RESULT = sent;
             :} ;
 
-//No terminado
 DEFPROC ::= procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:blq punto_coma {:
-                fpl.type = "void";
-                fpl.name = i;
-                fpl.bloque = blq;
-                RESULT = fpl;
+                Sentencia def = new Sentencia();
+                Simbolo id = new Simbolo();
+                id.valor = i;
+
+                Simbolo t = new Simbolo();
+                t.valor = "void";
+
+                def.simbolos.add(t);
+                def.simbolos.add(id);
+                def.simbolos.addAll(fpl.simbolos);
+
+                Funcion deffun = new Funcion();
+                deffun.cabecera = def;
+                deffun.declaraciones = blq.declaraciones;
+                deffun.bloque = blq.bloque;
+                deffun.esFuncion = true;
+                RESULT = deffun;
             :} ;
 
-//No terminado
 DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_coma BLQ:blq punto_coma {:
-                blq.id = i;
-                fpl.type = t.valor.toString();
-                fpl.name = i;
-                fpl.bloque = blq;
-                RESULT = fpl;
+	            Sentencia def = new Sentencia();
+	            Simbolo id = new Simbolo();
+	            id.valor = i;
+
+	            def.simbolos.add(t);
+	            def.simbolos.add(id);
+	            def.simbolos.addAll(fpl.simbolos);
+
+                Funcion deffun = new Funcion();
+                deffun.cabecera = def;
+                deffun.declaraciones = blq.declaraciones;
+                deffun.bloque = blq.bloque;
+                deffun.esFuncion = true;
+                RESULT = deffun;
+
             :};
-//No terminado
-FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis {: RESULT = fp; :}
-                    | /* lambda */ {: RESULT = new Function(); :} ;
-//No terminado
+
+FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis {:
+	                    Simbolo ap = new Simbolo();
+	                    ap.esAp = true;
+	                    Simbolo cp = new Simbolo();
+	                    cp.esCp = true;
+	                    Sentencia fpl = new Sentencia();
+	                    fpl.simbolos.add(ap);
+	                    fpl.simbolos.addAll(fpl.simbolos);
+	                    fpl.simbolos.add(cp);
+	                    RESULT = fpl;
+:}
+                    | /* lambda */ {: RESULT = new Sentencia(); :} ;
+
 FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t {:
-                    vl.tipo = t.valor.toString();
-                    Function f = new Function();
-                    f.varLists.add(0, vl);
-                    RESULT = f;
+                    Sentencia fp = new Sentencia();
+                    fp.simbolos.addAll(vl.simbolos);
+
+                    Simbolo dp = new Simbolo();
+                    dp.esDosP = true;
+                    dp.valor = ":";
+
+                    fp.simbolos.add(sc);
+                    fp.simbolos.add(t);
+                    RESULT = fp;
                 :}
                 | VARLIST:vl dos_puntos TBAS:t punto_coma FORMAL_PARAM:fp {:
-                    vl.tipo = t.valor.toString();
-                    fp.varLists.add(0, vl);
+                    Sentencia fp = new Sentencia();
+                    fp.simbolos.addAll(vl.simbolos);
+
+
+                    Simbolo dp = new Simbolo();
+                    dp.esDosP = true;
+                    dp.valor = ":";
+
+                    Simbolo pc = new Simbolo();
+                    pc.esPyC = true;
+                    pc.valor = ";";
+
+                    fp.simbolos.add(dp);
+                    fp.simbolos.add(t);
+                    fp.simbolos.add(pc);
+
+                    fp.simbolos.addAll(fp.simbolos);
+
                     RESULT = fp;
                 :};
 

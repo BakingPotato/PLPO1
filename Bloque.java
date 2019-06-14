@@ -7,6 +7,7 @@ public class Bloque {
 	public ArrayList<Function> dclList;
 	public ArrayList<Sentencia> sentList;
 	public String id;
+	public boolean isMain;
 
 	public Bloque () {
 		this.dclList = new ArrayList<>();
@@ -29,6 +30,8 @@ public class Bloque {
 		}
 
 		// print sentencias
+		if (this.isMain)
+			r.append("\nvoid main (void)\n{\n");
 		for (Sentencia s : sentList) {
 			r.append(s.returnSB());
 		}
