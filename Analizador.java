@@ -7,7 +7,7 @@ import java.io.IOException;
             System.out.println("Inserta nombre de archivo\n"+"( Usage : java Analizador <inputfile> )");
         } else {
             for (int i = 0; i < argv.length; i++) {
-                AnalizadorLexico lexico = null;
+                AnalizadorLexico lexico;
                 try {
                     lexico = new AnalizadorLexico( new java.io.FileReader(argv[i]));
                     parser sintactico = new parser(lexico);

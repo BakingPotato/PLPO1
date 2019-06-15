@@ -1,0 +1,668 @@
+import java_cup.runtime.*;
+import java.util.LinkedList;
+
+parser code {: //Tratamiento de errores
+public String fileName;
+public void syntax_error (Symbol s){
+	System.err.println("Error de sintaxis (lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
+	System.err.println("Error recuperado");
+}
+
+public void unrecovered_syntax_error(Symbol s){
+	System.err.println("Error de sintaxis no recuperable");
+}
+:};
+
+
+/* Terminales */
+terminal program, begin, end, const_, var, procedure, function, unit;
+terminal if_, then, else_, while_, do_, repeat, until, to, downto ,bucle_for;
+terminal integer, real, div, mod, or, and, not, lt, gt, let, bet;
+terminal igual, op_mas, op_men, op_mul, coma, punto, dos_puntos, punto_coma, dos_p_igual, ab_parentesis, cr_parentesis;
+terminal String identifier, string_const, numeric_integer_const, numeric_real_const;
+
+/* No terminales */
+non terminal Funcion PRG, BLQ, DCL, DCLLIST, DEFCTE, CTELIST, DEFPROC, DEFFUN, DEFVAR, DEFVARLIST, FORMAL_PARAM, FORMAL_PARAMLIST, SENTLIST;
+non terminal Simbolo SIMPVALUE, TBAS, INC, OP, OPARIT, ID, OPLOG, OPCOMP;
+non terminal Sentencia VARLIST, SENT, ASIG, SUBPPARAMLIST, EXPCOND, EXP, EXPLIST, PROC_CALL, FACTOR, FACTORCOND;
+
+/* Precedences */
+precedence left lt, gt, let, bet;
+precedence left op_mas, op_men, or;
+precedence left op_mul, div, mod, and;
+precedence left not;
+
+/* Grammar */
+start with PRG;
+//No terminado
+PRG ::= program identifier punto_coma BLQ:blq punto  {:
+            System.out.print(blq.reestructurar()); //llamamos a returnSB sin argumento porque no es una función
+        :}
+        | unit identifier:id punto_coma DCLLIST:dl punto {:
+            new Function();
+        :};
+//No seguro
+BLQ ::= DCLLIST:dcl begin SENTLIST:sl end {:
+            Funcion blq = new Funcion();
+            blq.declaraciones = dcl.declaraciones;
+            if (!sl.sentList.isEmpty())
+                blq.bloque.addAll(sl.sentList);
+            blq.bloque.addAll(sl.bloque);
+            RESULT = blq;
+        :} ;
+
+//No seguro
+DCLLIST ::= /* lambda */ {:
+            RESULT = new Funcion();
+        :}
+        | DCLLIST:dl DCL:d {:
+            if(d.esFuncion || d.esProc){
+                dl.declaraciones.add(d.cabecera);
+                dl.declaraciones.addAll(d.declaraciones);
+                dl.declaraciones.addAll(d.bloque);
+            }else
+                dl.declaraciones.addAll(d.declaraciones);
+            RESULT = dl;
+        :};
+
+//Funcion
+SENTLIST ::= SENT:s {:
+                Funcion f = new Funcion();
+                //Programa.contadorSentencias++;
+                //s.numeroSent = Programa.contadorSent;
+                if (s.esDeclaracion)
+                    f.declaraciones.add(s);
+                else if (s.esControlFlujo){
+                    if (!s.sentList.isEmpty())
+                        f.declaraciones.addAll(s.sentList);
+                    f.bloque.add(s);
+                }else{
+                    f.bloque.add(s);
+                }
+                RESULT = f;
+          :}
+          | SENTLIST:listaS SENT:s {:
+                //Programa.contadorSentencias++;
+                //s.numeroSent = Programa.contadorSentencias;
+                if (s.esDeclaracion){
+                    listaS.declaraciones.add(s);
+                }else if (s.esControlFlujo){
+                    if (!s.sentList.isEmpty()){
+                        listaS.declaraciones.addAll(s.sentList);
+                    }
+                    listaS.bloque.add(s);
+                }else{
+                    listaS.bloque.add(s);
+                }
+                RESULT = listaS;
+          :} ;
+
+// Zona de declaraciones
+//Funcion
+DCL ::= DEFCTE:d  {: RESULT = d; :}
+      | DEFVAR:d  {: RESULT = d; :}
+      | DEFPROC:d {: RESULT = d; :}
+      | DEFFUN:d  {: RESULT = d; :} ;
+
+//Funcion
+DEFCTE ::= const_ CTELIST:cl {: RESULT = cl;:} ;
+
+//Funcion
+CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma {:
+            Funcion f = new Funcion();
+			Sentencia cteAct = new Sentencia();
+			cteAct.esDeclaracionCte = true;
+
+			Simbolo d = new Simbolo();
+			//d.esDefine = true;
+			d.valor = "#define";
+
+			Simbolo i = new Simbolo();
+			i.esId = true;
+			i.valor = id;
+
+			Simbolo cte = sv;
+
+			cteAct.simbolos.add(d);
+			cteAct.simbolos.add(i);
+			cteAct.simbolos.add(cte);
+
+			f.declaraciones.add(cteAct);
+			RESULT = f;
+         :}
+        | CTELIST:cl identifier:id igual SIMPVALUE:sv punto_coma {:
+            Funcion f = new Funcion();
+            Sentencia cteAct = new Sentencia();
+            cteAct.esDeclaracionCte = true;
+
+            Simbolo d = new Simbolo();
+            //d.esDefine = true;
+            d.valor = "#define";
+
+            Simbolo i = new Simbolo();
+            i.esId = true;
+            i.valor = id;
+
+            Simbolo cte = sv;
+
+            cteAct.simbolos.add(d);
+            cteAct.simbolos.add(i);
+            cteAct.simbolos.add(cte);
+
+            f.declaraciones.add(cteAct);
+            f.declaraciones.addAll(cl.declaraciones);
+            RESULT = f;
+        :} ;
+
+//Simbolo
+SIMPVALUE ::= numeric_integer_const:ci {:
+                Simbolo s = new Simbolo();
+                s.valor = ci;
+                s.esCte = true;
+                RESULT = s;
+            :}
+            | numeric_real_const:cr {:
+                Simbolo s = new Simbolo();
+                s.valor = cr;
+                s.esCte = true;
+                RESULT = s;
+            :}
+            | string_const:cs {:
+                Simbolo s = new Simbolo();
+                s.valor = cs;
+                s.esCte = true;
+                RESULT = s;
+            :} ;
+
+//Funcion
+DEFVAR ::= var DEFVARLIST:d punto_coma {: RESULT = d; :} ;
+
+//Funcion
+DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
+                Funcion f = new Funcion();
+                Sentencia sv = new Sentencia();
+
+                Simbolo simba = new Simbolo();
+                simba.valor = ";";
+
+                sv.simbolos.add(t);
+                sv.simbolos.addAll(v.simbolos);
+                sv.simbolos.add(simba);
+
+                f.declaraciones.add(sv);
+
+                RESULT = f;
+            :}
+            | DEFVARLIST:dvl punto_coma VARLIST:vl dos_puntos TBAS:t {:
+                Funcion f = new Funcion();
+                Sentencia sv = new Sentencia();
+
+                Simbolo simba = new Simbolo();
+                simba.esPyC = true;
+                simba.valor = ";";
+
+                sv.simbolos.add(t);
+                sv.simbolos.addAll(v.simbolos);
+                sv.simbolos.add(simba);
+                f.declaraciones.add(sv);
+                f.addAll(dvl.declaraciones);
+
+                RESULT = f;
+            :} ;
+
+//Sentencia
+VARLIST ::= identifier:i {:
+                Simbolo s = new Simbolo();
+                s.esId = true;
+                s.valor  = i;
+
+                Sentencia sent = new Sentencia();
+                sent.simbolos.add(s);
+                RESULT = sent;
+            :}
+            | identifier:i coma VARLIST:vl {:
+                Simbolo s = new Simbolo();
+                s.esId = true;
+                s.valor = i;
+
+                Simbolo sc = new Simbolo();
+                sc.esComa = true;
+                sc.valor = ",";
+
+                Sentencia sent = new Sentencia();
+                sent.simbolos.add(s);
+                sent.simbolos.addAll(vl.simbolos);
+                RESULT = sent;
+            :} ;
+
+//Funcion
+DEFPROC ::= procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:blq punto_coma {:
+                Sentencia def = new Sentencia();
+                Simbolo id = new Simbolo();
+                id.valor = i;
+
+                Simbolo ap = new Simbolo();
+                ap.esParentesis = true;
+                ap.valor = "{";
+                Sentencia a = new Sentencia();
+                a.simbolos.add(ap);
+
+                Simbolo cp = new Simbolo();
+                ap.esParentesis = true;
+                cp.valor = "}";
+                Sentencia c = new Sentencia();
+                c.simbolos.add(cp);
+
+                Simbolo t = new Simbolo();
+                t.valor = "void";
+
+                def.simbolos.add(t);
+                def.simbolos.add(id);
+                def.simbolos.addAll(fpl.simbolos);
+
+                Funcion deffun = new Funcion();
+                deffun.cabecera = def;
+                deffun.declaraciones.add(a);
+                deffun.declaraciones.addAll(blq.declaraciones);
+                deffun.bloque.addAll(blq.bloque);
+                deffun.bloque.add(c);
+                deffun.esFuncion = true;
+                RESULT = deffun;
+            :} ;
+
+//Funcion
+DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_coma BLQ:blq punto_coma {:
+	            Sentencia def = new Sentencia();
+	            Simbolo id = new Simbolo();
+	            id.esIdFuncion = true;
+	            id.valor = i;
+
+	            Simbolo ap = new Simbolo();
+	            ap.esParentesis = true;
+	            ap.valor = "{";
+	            Sentencia a = new Sentencia();
+	            a.simbolos.add(ap);
+
+	            Simbolo cp = new Simbolo();
+	            ap.esParentesis = true;
+	            cp.valor = "}";
+	            Sentencia c = new Sentencia();
+	            c.simbolos.add(cp);
+
+	            def.simbolos.add(t);
+	            def.simbolos.add(id);
+	            def.simbolos.addAll(fpl.simbolos);
+
+                Funcion deffun = new Funcion();
+                deffun.cabecera = def;
+                deffun.declaraciones.add(a);
+                deffun.declaraciones.addAll(blq.declaraciones);
+                deffun.bloque.addAll(blq.bloque);
+                deffun.bloque.add(c);
+                deffun.esFuncion = true;
+                RESULT = deffun;
+
+            :};
+//Sentencia
+FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis {:
+            Simbolo ap = new Simbolo();
+            ap.esAp = true;
+
+            Simbolo cp = new Simbolo();
+            cp.esCp = true;
+
+            Sentencia fpl = new Sentencia();
+            fpl.simbolos.add(ap);
+            fpl.simbolos.addAll(fpl.simbolos);
+            fpl.simbolos.add(cp);
+            RESULT = fpl;
+        :}
+                    | /* lambda */ {: RESULT = new Sentencia(); :} ;
+//Sentencia
+FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t {:
+            Sentencia fp = new Sentencia();
+            fp.simbolos.addAll(vl.simbolos);
+
+            Simbolo dp = new Simbolo();
+            dp.esDosP = true;
+            dp.valor = ":";
+
+            fp.simbolos.add(sc);
+            fp.simbolos.add(t);
+            RESULT = fp;
+        :}
+        | VARLIST:vl dos_puntos TBAS:t punto_coma FORMAL_PARAM:fp {:
+            Sentencia f = new Sentencia();
+            f.simbolos.addAll(vl.simbolos);
+
+
+            Simbolo dp = new Simbolo();
+            dp.esDosP = true;
+            dp.valor = ":";
+
+            Simbolo pc = new Simbolo();
+            pc.esPyC = true;
+            pc.valor = ";";
+
+            f.simbolos.add(dp);
+            f.simbolos.add(t);
+            f.simbolos.add(pc);
+
+            f.simbolos.addAll(fp.simbolos);
+
+            RESULT = f;
+        :};
+
+//Simbolo
+TBAS ::= integer  {:
+            Simbolo s = new Simbolo();
+            s.valor = "int";
+            s.esTipo = true;
+            RESULT = s; :}
+        | real {:
+            Simbolo s = new Simbolo();
+            s.valor = "float";
+            s.esTipo = true;
+            RESULT = s;
+        :} ;
+
+// Zona de sentencias
+//Sentencia
+SENT ::= ASIG:a punto_coma  {:
+            //Programa.contadorSent++;
+
+			Simbolo s = new Simbolo();
+			s.valor = ";";
+			s.esPyC = true;
+
+			Sentencia sent = new Sentencia();
+			sent.simbolos.addAll(a.simbolos);
+			sent.simbolos.add(s);
+			sent.esAsignacion = true;
+			//sent.contadorTabulaciones = 1;
+			//sent.numeroSent = Programa.contadorSent;
+			RESULT = sent;
+    :}
+    | PROC_CALL:pc punto_coma {:
+            //Programa.contadorSent++;
+
+            Simbolo s = new Simbolo();
+            s.valor = ";";
+            s.esPyC = true;
+
+            Sentencia sent = new Sentencia();
+            sent.simbolos.addAll(pc.simbolos);
+            sent.simbolos.add(s);
+            //sent.contadorTabulaciones = 1;
+            //sent.numeroSent = Programa.contadorSent;
+            RESULT = sent;
+    :}//No terminado
+    | if_ EXPCOND:ec then BLQ:blq1 else_ BLQ:blq2 {:
+        Sentencia e = new Sentencia();
+        RESULT = e;
+    :}
+    | while_ EXPCOND:ec do_ BLQ:blq  {:
+        Sentencia e = new Sentencia();
+        RESULT = e;
+    :}
+    | repeat BLQ:blq until EXPCOND:ec punto_coma  {:
+        Sentencia e = new Sentencia();
+        RESULT = e;
+    :}
+    | bucle_for identifier:id dos_p_igual EXP:exp1 INC:inc EXP:exp2 do_ BLQ:blq  {:
+        Sentencia s = new Sentencia();
+        RESULT = s;
+    :};
+
+//Simbolo
+INC ::= to {: RESULT = new Simbolo(); :}
+     | downto {: RESULT = new Simbolo(); :};
+
+//Tal vez necesite cambios
+//Sentencia
+ASIG ::= ID:id dos_p_igual EXP:exp {:
+			Simbolo s = new Simbolo();
+			s.esAsignacion = true;
+			s.valor = " = ";
+
+			Sentencia e = new e();
+			e.simbolos.add(id);
+			e.simbolos.add(s);
+			e.simbolos.addAll(exp.simbolos);
+			RESULT = e;
+        :};
+//Simbolo
+ID ::= identifier:id {:
+            Simbolo s = new Simbolo();
+            s.esIdAsig = true;
+            s.valor = id;
+            RESULT = s;
+        :};
+//Sentencia
+EXP ::= EXP:e1 OP:op EXP:e2 {:
+           Simbolo s = new Simbolo();
+           s.esOperacion = true;
+           s.valor = op.operacion;
+
+           Sentencia e = new Sentencia();
+           e.simbolos.addAll(e1.simbolos);
+           e.simbolos.add(s);
+           e.simbolos.addAll(e2.simbolos);
+           RESULT = e;
+        :}
+        | FACTOR:fact {:
+            RESULT = fact;
+        :} ;
+
+//Simbolo
+OP ::= OPARIT:o {: RESULT = o; :};
+
+//Simbolo
+OPARIT ::= op_mas{:
+            Simbolo s = new Simbolo();
+            s.esOperacion = true;
+            s.valor = " + ";
+            RESULT = s;
+        :}
+        | op_men{:
+            Simbolo s = new Simbolo();
+            s.esOperacion = true;
+            s.valor = " - ";
+            RESULT = s;
+        :}
+        | op_mul {:
+            Simbolo s = new Simbolo();
+            s.esOperacion = true;
+            s.valor = " * ";
+            RESULT = s;
+        :}
+        | div {:
+            Simbolo s = new Simbolo();
+            s.esOperacion = true;
+            s.valor = " / ";
+            RESULT = s;
+        :}
+        | mod {:
+            Simbolo s = new Simbolo();
+            s.esOperacion = true;
+            s.valor = " % ";
+            RESULT = s;
+        :} ;
+
+//Sentencia
+FACTOR ::= SIMPVALUE:sv {:
+            Sentencia e = new Sentencia();
+            e.simbolos.add(sv);
+            RESULT = e;
+        :}
+        | ab_parentesis EXP:exp cr_parentesis {:
+            Simbolo s = new Simbolo();
+            s.esParentesis = true;
+            s.valor = "(";
+
+			Simbolo s2 = new Simbolo();
+			s2.esParentesis = true;
+			s2.valor = ")";
+
+			Sentencia e = new Sentencia();
+			e.simbolos.add(s);
+			e.simbolos.addAll(exp.simbolos);
+			e.simbolos.add(s2);
+            RESULT = e;
+        :}
+        | identifier:id SUBPPARAMLIST:spl {:
+            Simbolo i = new Simbolo();
+            i.esId = true;
+            i.valor= id;
+
+            Simbolo s = new Simbolo();
+            s.esParentesis = true;
+            s.valor = "(";
+
+            Simbolo s2 = new Simbolo();
+            s2.esParentesis = true;
+            s2.valor = ")";
+
+            Sentencia e = new Sentencia();
+            e.simbolos.add(i);
+            e.simbolos.add(s);
+            e.simbolos.addAll(spl.simbolos);
+            e.simbolos.add(s2);
+            RESULT = e;
+        :} ;
+
+//Sentencia
+SUBPPARAMLIST ::= ab_parentesis EXPLIST:el cr_parentesis{:
+            Sentencia e = new Sentencia();
+            e.simbolos.addAll(el.simbolos);
+            RESULT = e;
+        :}
+        | /*lambda*/ {:
+            RESULT = new Sentencia();
+        :} ;
+
+//Sentencia
+EXPLIST ::= EXP:exp {:
+            RESULT = exp;
+        :}
+        EXP:exp coma EXPLIST:expl {:
+            Simbolo s = new Simbolo();
+            s.esComa = true;
+            s.valor = ",";
+
+            Sentencia e = new Sentencia();
+            e.simbolos.addAll(exp.simbolos);
+            e.simbolos.add(s);
+            e.simbolos.addAll(exp2.simbolos);
+            RESULT = e;
+        :};
+
+//Sentencia
+PROC_CALL ::= identifier:id SUBPPARAMLIST:spl {:
+            Simbolo i = new Simbolo();
+            i.esId = true;
+            i.valor= id;
+
+            Simbolo s = new Simbolo();
+            s.esParentesis = true;
+            s.valor = "(";
+
+            Simbolo s2 = new Simbolo();
+            s2.esParentesis = true;
+            s2.valor = ")";
+
+            Sentencia e = new Sentencia();
+            e.simbolos.add(i);
+            e.simbolos.add(s);
+            e.simbolos.addAll(spl.simbolos);
+            e.simbolos.add(s2);
+            RESULT = e;
+        :};
+
+//Comprobacion de Sentenciaes condicionales (opcional)
+EXPCOND ::= EXPCOND:exp1 OPLOG:op EXPCOND:exp2 {:
+            exp1.condicion.add(op);
+            exp1.condicion.addAll(exp2.condicion);
+            RESULT = exp1;
+         :}
+         | FACTORCOND:fc {:
+            RESULT = fc;
+        :};
+
+OPLOG ::= or {:
+            Simbolo s = new Simbolo();
+            s.esOperacionL = true;
+            s.valor = " || ";
+            RESULT = s;
+        :}
+        | and {:
+            Simbolo s = new Simbolo();
+            s.esOperacionL = true;
+            s.valor = " && ";
+            RESULT = s;
+        :} ;
+
+FACTORCOND ::= EXP:e1 OPCOMP:op EXP:e2 {:
+            Sentencia e = new Sentencia();
+            e.condicion.addAll(e1.simbolos);
+            e.condicion.add(opr);
+            e.condicion.addAll(e2.simbolos);
+
+            RESULT = e;
+        :}
+        | ab_parentesis EXP:exp cr_parentesis {:
+            Simbolo s = new Simbolo();
+            s.esParentesis = true;
+            s.valor = "(";
+
+            Simbolo s2 = new Simbolo();
+            s2.esParentesis = true;
+            s2.valor = ")";
+
+            Sentencia e = new Sentencia();
+            e.condicion.add(s);
+            e.condicion.addAll(exp.simbolos);
+            e.condicion.add(s2);
+            RESULT = e;
+        :}
+        | not FACTORCOND:fc {:
+            Simbolo s = new Simbolo();
+            s.valor = "!";
+            s.esNegacion = true;
+
+            Sentencia e = new Sentencia();
+            e.condicion.add(s);
+            e.condicion.addAll(fc.condicion);
+            RESULT = e;
+        :};
+
+OPCOMP ::= lt  {:
+            Simbolo s = new Simbolo();
+            s.esOperacionC = true;
+            s.valor = " < ";
+            RESULT = s;
+        :}
+        | gt  {:
+            Simbolo s = new Simbolo();
+            s.esOperacionC = true;
+            s.valor = " > ";
+            RESULT = s;
+        :}
+        | let {:
+            Simbolo s = new Simbolo();
+            s.esOperacionC = true;
+            s.valor = " <= ";
+            RESULT = s;
+        :}
+        | bet {:
+            Simbolo s = new Simbolo();
+            s.esOperacionC = true;
+            s.valor = " >= ";
+            RESULT = s;
+        :}
+        | igual {:
+            Simbolo s = new Simbolo();
+            s.esOperacionC = true;
+            s.valor = " == ";
+            RESULT = s;
+        :};

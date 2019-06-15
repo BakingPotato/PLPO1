@@ -5,33 +5,24 @@ public class Sentencia{
 
     public List<Sentencia> sentList;
     public List<Simbolo> simbolos;
+    public List<Simbolo> condicion;
     public int n_sent;
-    public boolean declaración;
-    public boolean controlFlujo;
+    public boolean esFuncion, esLlamadaVacia, esDeclaracion, esControlFlujo, esAsignacion, esVacia;
     public int tabs;
 
     public Sentencia() {
         this.sentList = new ArrayList<>();
         this.simbolos = new ArrayList<>();
+        this.condicion = new ArrayList<>();
         this.n_sent = 0;
-        this.declaración = false;
-        this.controlFlujo = false;
+        this.esFuncion = false;
+        this.esLlamadaVacia = false;
+        this.esDeclaracion = false;
+        this.esControlFlujo = false;
+        this.esAsignacion = false;
+        this.esVacia = false;
         this.tabs = 0;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
     public boolean isMain;
