@@ -47,12 +47,12 @@ PRG ::= program identifier punto_coma BLQ:blq punto  {:
 }catch (IOException e){
             System.out.print("Error");
 }*/
-        System.out.print(blq.reestructurar()); //llamamos a returnSB sin argumento porque no es una función
+        System.out.print(blq.reestructurar());
     :}
     | unit identifier:id punto_coma DCLLIST:dcl punto {:
         Funcion f = new Funcion();
         Sentencia sent = new Sentencia();
-        sent.simbolos.add(new Simbolo("// Libreria "+id));
+        sent.simbolos.add(new Simbolo("// Libreria: "+id));
         f.declaraciones.add(sent);
         f.declaraciones.addAll(dcl.declaraciones);
         System.out.print(f.reestructurar());
@@ -82,8 +82,6 @@ DCLLIST ::= /* lambda */ {:
 
 SENTLIST ::= SENT:s {:
         Funcion f = new Funcion();
-        //Programa.contadorSentencias++;
-        //s.numeroSent = Programa.contadorSent;
         if (s.esFuncion)
             f.declaraciones.add(s);
         else if (s.esControlFlujo){
@@ -96,8 +94,6 @@ SENTLIST ::= SENT:s {:
         RESULT = f;
     :}
     | SENTLIST:listaS SENT:s {:
-        //Programa.contadorSentencias++;
-        //s.numeroSent = Programa.contadorSentencias;
         if (s.esFuncion){
             listaS.declaraciones.add(s);
         }else if (s.esControlFlujo){
@@ -220,6 +216,7 @@ DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
 VARLIST ::= identifier:i {:
        Simbolo s = new Simbolo();
        s.esId = true;
+       s.esUltimo = true;
        s.valor  = i;
 
        Sentencia sent = new Sentencia();
@@ -231,12 +228,9 @@ VARLIST ::= identifier:i {:
        s.esId = true;
        s.valor = i;
 
-       Simbolo sc = new Simbolo();
-       sc.valor = ", ";
-
        Sentencia sent = new Sentencia();
        sent.simbolos.add(s);
-       sent.simbolos.add(sc);
+       sent.simbolos.add(new Simbolo(", "));
        sent.simbolos.addAll(vl.simbolos);
        RESULT = sent;
     :} ;
@@ -352,11 +346,16 @@ FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis {:
 //Sentencia
 FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t {:
         Sentencia f = new Sentencia();
-
+        int i = 1;
         for (Simbolo aux : vl.simbolos){
-            if(aux.esId){ //Comprobamos que aux es Id para evitar las comas guardadas en VARLIST
+            i++;
+            if(aux.esId && aux.esUltimo){ //Comprobamos que aux es Id para evitar las comas guardadas en VARLIST
                 f.simbolos.add(t);
                 f.simbolos.add(aux);
+            }else if(aux.esId){
+                f.simbolos.add(t);
+                f.simbolos.add(aux);
+                f.simbolos.add(new Simbolo(", "));
             }
         }
         RESULT = f;
@@ -364,14 +363,11 @@ FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t {:
     | VARLIST:vl dos_puntos TBAS:t punto_coma FORMAL_PARAM:fp {:
         Sentencia f = new Sentencia();
 
-        Simbolo c = new Simbolo();
-        c.valor = ", ";
-
         for (Simbolo aux : vl.simbolos){
             if(aux.esId){ //Comprobamos que aux es Id para evitar las comas guardadas en VARLIST
                 f.simbolos.add(t);
                 f.simbolos.add(aux);
-                f.simbolos.add(c);
+                f.simbolos.add(new Simbolo(", "));
             }
         }
 
@@ -393,8 +389,6 @@ TBAS ::= integer  {:
 
 // Zona de sentencias
 SENT ::= ASIG:a punto_coma  {:
-        //Programa.contadorSent++;
-
         Simbolo s = new Simbolo();
         s.valor = ";";
         s.esPyC = true;
@@ -403,13 +397,9 @@ SENT ::= ASIG:a punto_coma  {:
         sent.simbolos.addAll(a.simbolos);
         sent.simbolos.add(s);
         sent.esAsignacion = true;
-        //sent.contadorTabulaciones = 1;
-        //sent.numeroSent = Programa.contadorSent;
         RESULT = sent;
     :}
     | PROC_CALL:pc punto_coma {:
-         //Programa.contadorSent++;
-
         Simbolo s = new Simbolo();
         s.valor = ";";
         s.esPyC = true;
@@ -417,22 +407,18 @@ SENT ::= ASIG:a punto_coma  {:
         Sentencia sent = new Sentencia();
         sent.simbolos.addAll(pc.simbolos);
         sent.simbolos.add(s);
-        //sent.contadorTabulaciones = 1;
-        //sent.numeroSent = Programa.contadorSent;
         RESULT = sent;
     :}
     | if_ EXPCOND:cond then BLQ:blq else_ BLQ:blq2 {:
         Simbolo iff = new Simbolo();
         iff.valor = "if ";
 
-        Simbolo ap = new Simbolo();
-        ap.valor = "{";
+        Simbolo ap = new Simbolo("{");
         Sentencia a = new Sentencia();
         a.esApertura = true;
         a.simbolos.add(ap);
 
-        Simbolo cp = new Simbolo();
-        cp.valor = "}";
+        Simbolo cp = new Simbolo("}");
         Sentencia c = new Sentencia();
         c.esCierre = true;
         c.simbolos.add(cp);
@@ -444,8 +430,9 @@ SENT ::= ASIG:a punto_coma  {:
         el.esApertura = true;
 
         Sentencia sent = new Sentencia();
-        sent.simbolos.add(iff);
+        sent.simbolos.add(new Simbolo("if ("));
         sent.simbolos.addAll(cond.simbolos);
+        sent.simbolos.add(new Simbolo(")"));
         sent.sentList.add(a);
         sent.esControlFlujo = true;
 
@@ -472,23 +459,17 @@ SENT ::= ASIG:a punto_coma  {:
     :}
     | while_ EXPCOND:cond do_ BLQ:blq  {:
         Sentencia sent = new Sentencia();
-        Simbolo whil = new Simbolo();
-        whil.valor = "while ";
 
-        Simbolo ap = new Simbolo();
-        ap.valor = "{";
         Sentencia a = new Sentencia();
         a.esApertura = true;
-        a.simbolos.add(ap);
-
-        Simbolo cp = new Simbolo();
-        cp.valor = "}";
+        a.simbolos.add(new Simbolo("{"));
         Sentencia c = new Sentencia();
         c.esCierre = true;
-        c.simbolos.add(cp);
+        c.simbolos.add(new Simbolo("}"));
 
-        sent.simbolos.add(whil);
+        sent.simbolos.add(new Simbolo("while ("));
         sent.simbolos.addAll(cond.simbolos);
+        sent.simbolos.add(new Simbolo(")"));
         sent.sentList.add(a);
         sent.esControlFlujo = true;
 
@@ -505,16 +486,12 @@ SENT ::= ASIG:a punto_coma  {:
     :}
     | repeat BLQ:blq until EXPCOND:cond punto_coma  {:
         Sentencia sent = new Sentencia();
-        Simbolo doo = new Simbolo();
-        doo.valor = "do {";
 
-        Simbolo cp = new Simbolo();
-        cp.valor = "} until";
         Sentencia c = new Sentencia();
-        c.simbolos.add(cp);
+        c.simbolos.add(new Simbolo("} until ("));
         c.esCierre = true;
 
-        sent.simbolos.add(doo);
+        sent.simbolos.add(new Simbolo("do {"));
         sent.esControlFlujo = true;
         sent.esApertura = true;
 
@@ -526,6 +503,7 @@ SENT ::= ASIG:a punto_coma  {:
             sent.sentList.add(s);
         }
         c.simbolos.addAll(cond.simbolos);
+        c.simbolos.add(new Simbolo(")"));
         sent.sentList.add(c);
         RESULT = sent;
     :}
@@ -566,22 +544,19 @@ SENT ::= ASIG:a punto_coma  {:
     :};
 
 INC ::= to {:
-        Simbolo s = new Simbolo();
-        s.valor = "<";
+        Simbolo s = new Simbolo("<");
         s.valor2 = "+1";
         RESULT = s;
     :}
      | downto {:
-        Simbolo s = new Simbolo();
-        s.valor = ">";
+        Simbolo s = new Simbolo(">");
         s.valor2 = "-1";
         RESULT = s;
     :};
 
 ASIG ::= ID:id dos_p_igual EXP:exp {:
-        Simbolo s = new Simbolo();
+        Simbolo s = new Simbolo(" = ");
         s.esAsignacion = true;
-        s.valor = " = ";
 
         Sentencia e = new Sentencia();
         e.simbolos.add(id);
@@ -710,16 +685,9 @@ PROC_CALL ::= identifier:id SUBPPARAMLIST:spl {:
 // Comprobacion de Sentenciaes condicionales (opcional)
 EXPCOND ::= EXPCOND:e1 OPLOG:op EXPCOND:e2 {:
         Sentencia e = new Sentencia();
-        Simbolo ap = new Simbolo();
-        ap.valor = "(";
-
-        Simbolo cp = new Simbolo();
-        cp.valor = ")";
-        e.simbolos.add(ap);
         e.simbolos.addAll(e1.simbolos);
         e.simbolos.add(op);
         e.simbolos.addAll(e2.simbolos);
-        e.simbolos.add(cp);
         RESULT = e;
     :}
     | FACTORCOND:fc {:
@@ -738,18 +706,11 @@ OPLOG ::= or {:
     :} ;
 
 FACTORCOND ::= EXP:e1 OPCOMP:op EXP:e2 {:
-        Simbolo ap = new Simbolo();
-        ap.valor = "(";
-
-        Simbolo cp = new Simbolo();
-        cp.valor = ")";
 
        Sentencia e = new Sentencia();
-       e.simbolos.add(ap);
        e.simbolos.addAll(e1.simbolos);
        e.simbolos.add(op);
        e.simbolos.addAll(e2.simbolos);
-       e.simbolos.add(cp);
 
        RESULT = e;
     :}
