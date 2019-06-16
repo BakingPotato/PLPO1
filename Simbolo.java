@@ -8,8 +8,8 @@ public class Simbolo {
     }
 
     public TipoSim tipo_enum;
-    public String valor; //id, operacion, operacionC, operacionL, negacion, parentesis, tipo, coma, PyC, asignacion;
-    public boolean esId, esIdAsig, esIdFuncion, esOperacion, esOperacionC, esOperacionL, esNegacion, esParentesis, esTipo, esComa, esPyC, esDosP, esAsignacion, esCte;
+    public String valor, valor2; //id, operacion, operacionC, operacionL, negacion, parentesis, tipo, coma, PyC, asignacion;
+    public boolean esId, esIdAsig, esIdFuncion, esPyC, esDosP, esAsignacion;
 
     public Simbolo(){
         /*id = new String();  operacion = new String();
@@ -17,11 +17,16 @@ public class Simbolo {
         parentesis = new String();  tipo = new String();
         coma = new String(); PyC = new String();    asignacion = new String();*/
         valor = new String();
+        valor2 = new String();
 
-        esId = false;  esIdAsig = false; esOperacion = false; esIdFuncion = false;
-        esOperacionC = false;   esOperacionL = false; esNegacion = false;
-        esParentesis = false;   esTipo = false;
-        esComa = false; esPyC = false; esDosP = false; esAsignacion = false;
-        esCte = false;
+        esId = false; esIdAsig = false; esIdFuncion = false;
+        esPyC = false; esDosP = false; esAsignacion = false;
+    }
+
+    public Simbolo(String valor){
+        this.valor = valor;
+        valor2 = new String();
+        esId = false; esIdAsig = false; esIdFuncion = false;
+        esPyC = false; esDosP = false; esAsignacion = false;
     }
 }

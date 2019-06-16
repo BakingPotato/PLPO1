@@ -2,26 +2,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Sentencia{
-
-    public List<Sentencia> sentList;
     public List<Simbolo> simbolos;
-    public List<Simbolo> condicion;
+    public List<Sentencia> sentList;
     public int n_sent;
-    public boolean esFuncion, esLlamadaVacia, esDeclaracion, esControlFlujo, esAsignacion, esVacia;
-    public int tabs;
+    public boolean esFuncion, esLlamadaVacia, esControlFlujo, esAsignacion, esVacia, esApertura, esCierre;
+    public int conTabs;
 
     public Sentencia() {
         this.sentList = new ArrayList<>();
         this.simbolos = new ArrayList<>();
-        this.condicion = new ArrayList<>();
         this.n_sent = 0;
         this.esFuncion = false;
         this.esLlamadaVacia = false;
-        this.esDeclaracion = false;
         this.esControlFlujo = false;
         this.esAsignacion = false;
         this.esVacia = false;
-        this.tabs = 0;
+        this.esApertura = false;
+        this.esCierre = false;
+        this.conTabs = 0;
     }
 
 /*

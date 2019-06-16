@@ -19,11 +19,11 @@ public class Funcion {
         boolean returnAnadido = false;
         int i = 0;
         String programa = new String();
-        for(Simbolo sim: cabecera.simbolos){
-            programa += sim.valor;
-        }
-        programa +=  "\n";
         for(Sentencia sent: declaraciones){
+            if(sent.esCierre){
+                i--;
+            }
+            programa = tabs(programa, i);
             for(Simbolo sim: sent.simbolos){
                 if(sim.esIdFuncion) { //Si es id de una funcion lo añadimos a la lista antes de imprimirlo
                     identificadores.add(sim.valor);
@@ -42,17 +42,36 @@ public class Funcion {
                     programa += sim.valor;
             }
             returnAnadido = false;
-            i = 0;
             programa +=  "\n";
-        }
-        programa +=  "\nvoid main ( void )\n{\n";
-        for(Sentencia sent: bloque){
-            for(Simbolo sim: sent.simbolos){
-                programa += sim.valor;
+            if(sent.esApertura){
+                i++;
             }
-            programa +=  "\n";
         }
-        programa +=  "}";
+        if(!bloque.isEmpty()) {
+            programa += "\nvoid main ( void )\n{\n";
+            i = 1;
+            for (Sentencia sent : bloque) {
+                if (sent.esCierre) {
+                    i--;
+                }
+                programa = tabs(programa, i);
+                for (Simbolo sim : sent.simbolos) {
+                    programa += sim.valor;
+                }
+                programa += "\n";
+                if (sent.esApertura) {
+                    i++;
+                }
+            }
+            programa += "}";
+        }
         return programa;
+    }
+
+    private String tabs(String aux, int cont){
+        for(int i = 0; i<cont; i++){
+                aux += "\t";
+        }
+        return aux;
     }
 }

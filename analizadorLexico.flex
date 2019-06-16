@@ -96,7 +96,7 @@ Comment = {SingleLineComment} | {MultipleLineComment}
 "until"     { return symbol(sym.until); }
 "to"        { return symbol(sym.to); }
 "downto"    { return symbol(sym.downto); }
-"unit"      { return symbol(sym.unit); }
+"UNIT"      { return symbol(sym.unit); }
 
 /* no se de expr regulares jeje revisen */
 {Identifier}	                    { return symbol(sym.identifier, yytext()); }
