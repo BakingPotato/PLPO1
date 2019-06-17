@@ -8,14 +8,10 @@ public class Simbolo {
     }
 
     public TipoSim tipo_enum;
-    public String valor, valor2; //id, operacion, operacionC, operacionL, negacion, parentesis, tipo, coma, PyC, asignacion;
+    public String valor, valor2;
     public boolean esId, esIdAsig, esIdFuncion, esPyC, esDosP, esAsignacion, esUltimo;
 
     public Simbolo(){
-        /*id = new String();  operacion = new String();
-        operacionC = new String();  operacionL = new String(); negacion = new String();
-        parentesis = new String();  tipo = new String();
-        coma = new String(); PyC = new String();    asignacion = new String();*/
         valor = new String();
         valor2 = new String();
     }
