@@ -98,7 +98,7 @@ Comment = {SingleLineComment} | {MultipleLineComment}
 "downto"    { return symbol(sym.downto); }
 "UNIT"      { return symbol(sym.unit); }
 
-/* no se de expr regulares jeje revisen */
+\'                                  { string.setLength(0); string.append("'"); yybegin(STRING); }
 {Identifier}	                    { return symbol(sym.identifier, yytext()); }
 {Numeric_integer_const}		        { return symbol(sym.numeric_integer_const, yytext()); }
 {Numeric_real_fixed_point_const}    { return symbol(sym.numeric_real_const, yytext()); }
@@ -107,16 +107,13 @@ Comment = {SingleLineComment} | {MultipleLineComment}
 {WhiteSpace}                        { /* ignore */ }
 {Comment}                           { /* ignore */ }
 
-\'                                  { string.setLength(0); yybegin(STRING); }
-// [^"*)"] esto se supone que va con algo
-
 
 <STRING> {
 
     /* Para que aparezca una comilla simple como contenido debe ir precedida de otra */
-    "''"                { string.append("'"); }
+    "''"            { string.append("'"); }
 
-    \'                 { yybegin(YYINITIAL); return symbol(sym.string_const, string.toString()); }
+    \'              { string.append("'"); yybegin(YYINITIAL); return symbol(sym.string_const, string.toString());}
 
     {StringCharacter}+  { string.append( yytext() ); }
 
