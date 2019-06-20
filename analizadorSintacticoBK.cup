@@ -37,18 +37,18 @@ precedence left not;
 start with PRG;
 
 PRG ::= program identifier punto_coma BLQ:blq punto  {:
-/*try{
+try{
         File dir = new File("./");
         dir.mkdirs();
         File file = new File(dir, fileName+".c");
         file.createNewFile();
-        BufferedWriter bw = new BufferedWriter(new FileWriter(tmp));
-        bw.wrtie(blq.reestructurar());
+        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+        bw.write(blq.reestructurar());
         bw.close();
 }catch (IOException e){
             System.out.print("Error");
-}*/
-        System.out.print(blq.reestructurar());
+}
+        //System.out.print(blq.reestructurar());
     :}
     | unit identifier:id punto_coma DCLLIST:dcl punto {:
         Funcion f = new Funcion();
@@ -56,7 +56,18 @@ PRG ::= program identifier punto_coma BLQ:blq punto  {:
         sent.simbolos.add(new Simbolo("// Libreria: "+id));
         f.declaraciones.add(sent);
         f.declaraciones.addAll(dcl.declaraciones);
-        System.out.print(f.reestructurar());
+        try{
+                File dir = new File("./");
+                dir.mkdirs();
+                File file = new File(dir, fileName+".c");
+                file.createNewFile();
+                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+                bw.write(f.reestructurar());
+                bw.close();
+        }catch (IOException e){
+                    System.out.print("Error");
+        }
+        //System.out.print(f.reestructurar());
     :};
 
 BLQ ::= DCLLIST:dcl begin SENTLIST:listaS end {:
@@ -224,7 +235,7 @@ DEFPROC ::= procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:blq punto
         c.simbolos.add(new Simbolo("}"));
 
         Sentencia def = new Sentencia();
-        def.simbolos.add(new Simbolo("void  "));
+        def.simbolos.add(new Simbolo("void "));
         def.simbolos.add(new Simbolo(i));
         def.simbolos.addAll(fpl.simbolos);
         if(fpl.esVacia){

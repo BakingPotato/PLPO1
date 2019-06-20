@@ -14,11 +14,12 @@ public class Funcion {
     }
 
     public String reestructurar(){
-        ArrayList<String> identificadores = new ArrayList<>();
-        ArrayList<String> identificadoresP = new ArrayList<>();
+        String programa = new String();
+        String identificador = new String(); //ID de la funcion actual
+        ArrayList<String> identificadores = new ArrayList<>(); //Metodos sin atributos
         boolean returnAnadido = false;
         int i = 0;
-        String programa = new String();
+
         for(Sentencia sent: declaraciones){
             if(sent.esCierre){
                 i--;
@@ -26,15 +27,15 @@ public class Funcion {
             programa = tabs(programa, i);
             for(Simbolo sim: sent.simbolos){
                 if(sim.esIdFuncion) { //Si es id de una funcion lo añadimos a la lista antes de imprimirlo
-                    identificadores.add(sim.valor);
+                    identificador = sim.valor;
                     if(sent.esLlamadaVacia){
-                        identificadoresP.add(sim.valor);
+                        identificadores.add(sim.valor);
                     }
                     programa += sim.valor;
-                }else if(identificadores.contains(sim.valor) && sim.esIdAsig) { //Si es id de asignacion y esta en la lista de ids ponemos return y activamos el boolean para saltar el "="
+                }else if(identificador.equals(sim.valor) && sim.esIdAsig) { //Si es id de asignacion y esta en la lista de ids ponemos return y activamos el boolean para saltar el "="
                     programa += "return ";
                     returnAnadido = true;
-                }else if(identificadoresP.contains(sim.valor) && !sim.esIdAsig) //Si la lista de id de metodos con llamadas vacias lo contiene y no es id de asignacion
+                }else if(identificadores.contains(sim.valor) && !sim.esIdAsig) //Si la lista de id de metodos con llamadas vacias lo contiene y no es id de asignacion
                     programa += sim.valor +"()";
                 else if(returnAnadido && !sim.esAsignacion && !sim.esPyC)
                     programa += sim.valor;
@@ -56,7 +57,10 @@ public class Funcion {
                 }
                 programa = tabs(programa, i);
                 for (Simbolo sim : sent.simbolos) {
-                    programa += sim.valor;
+                    if(identificadores.contains(sim.valor) && !sim.esIdAsig) //Si la lista de id de metodos con llamadas vacias lo contiene y no es id de asignacion
+                        programa += sim.valor +"()";
+                    else
+                        programa += sim.valor;
                 }
                 programa += "\n";
                 if (sent.esApertura) {
