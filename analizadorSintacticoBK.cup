@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 parser code {: //Tratamiento de errores
 public String fileName;
-public void syntax_error (Symbol s){
+public void syntax_error(Symbol s) {
 	System.err.println("Error de sintaxis (lexema <" + s.value.toString() + ">) en la linea " + s.left + " y en la columna " + s.right);
 	System.err.println("Error recuperado");
 }
@@ -32,6 +32,8 @@ precedence left lt, gt, let, bet;
 precedence left op_mas, op_men, or;
 precedence left op_mul, div, mod, and;
 precedence left not;
+
+precedence left error;
 
 /* Grammar */
 start with PRG;
@@ -77,7 +79,7 @@ BLQ ::= DCLLIST:dcl begin SENTLIST:listaS end {:
              blq.bloque.addAll(listaS.declaraciones);
          blq.bloque.addAll(listaS.bloque);
          RESULT = blq;
-    :} ;
+    :} | error end;
 
 DCLLIST ::= /* lambda */ {: RESULT = new Funcion(); :}
     | DCLLIST:dl DCL:d {:
@@ -153,7 +155,7 @@ CTELIST ::= identifier:id igual SIMPVALUE:sv punto_coma {:
         f.declaraciones.addAll(cl.declaraciones);
         f.declaraciones.add(cteAct);
         RESULT = f;
-    :} ;
+    :} | error punto_coma;
 
 SIMPVALUE ::= numeric_integer_const:ci {:
         Simbolo s = new Simbolo();
@@ -171,7 +173,7 @@ SIMPVALUE ::= numeric_integer_const:ci {:
        RESULT = s;
     :} ;
 
-DEFVAR ::= var DEFVARLIST:d punto_coma {: RESULT = d; :} ;
+DEFVAR ::= var DEFVARLIST:d punto_coma {: RESULT = d; :};
 
 DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
        Funcion f = new Funcion();
@@ -203,7 +205,7 @@ DEFVARLIST ::= VARLIST:v dos_puntos TBAS:t {:
         f.declaraciones.add(sv);
 
         RESULT = f;
-    :} ;
+    :};
 
 VARLIST ::= identifier:i {:
        Simbolo s = new Simbolo(i);
@@ -251,7 +253,7 @@ DEFPROC ::= procedure identifier:i FORMAL_PARAMLIST:fpl punto_coma BLQ:blq punto
         deffun.esFuncion = true;
 
         RESULT = deffun;
-    :} ;
+    :};
 
 DEFFUN ::=  function identifier:i FORMAL_PARAMLIST:fpl dos_puntos TBAS:t punto_coma BLQ:blq punto_coma {:
         Simbolo id = new Simbolo(i);
@@ -297,7 +299,7 @@ FORMAL_PARAMLIST ::= ab_parentesis FORMAL_PARAM:fp cr_parentesis {:
         fpl.simbolos.add(new Simbolo("( void )"));
         fpl.esVacia = true;
         RESULT = fpl;
-    :} ;
+    :};
 
 FORMAL_PARAM ::= VARLIST:vl dos_puntos TBAS:t {:
         Sentencia f = new Sentencia();
@@ -498,7 +500,7 @@ ASIG ::= ID:id dos_p_igual EXP:exp {:
         e.simbolos.add(s);
         e.simbolos.addAll(exp.simbolos);
         RESULT = e;
-    :};
+    :} ;
 
 ID ::= identifier:id {:
        Simbolo s = new Simbolo(id);

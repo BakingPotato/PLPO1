@@ -8,6 +8,7 @@
 %column
 %cupsym sym
 %cup
+%caseless
 
 %xstate STRING
 
@@ -35,9 +36,9 @@ Exp = "e"|"E"
 
 Identifier = {Alphabet} ({Alphabet} | {Digit} | "_")*
 
-Numeric_real_fixed_point_const = {Digits} "." {Digits}
-Numeric_real_exponential_const = {Digits} {Exp} {Sign}? {Digits}
-Numeric_real_mixed_const = {Numeric_real_fixed_point_const} {Exp} {Sign}? {Digits}
+Numeric_real_fixed_point_const = {Sign}? {Digits} "." {Digits}
+Numeric_real_exponential_const = {Sign}? {Digits} {Exp} {Sign}? {Digits}
+Numeric_real_mixed_const = {Sign}? {Digits} "." {Digits} {Exp} {Sign}? {Digits}
 
 Numeric_integer_const = {Sign}? {Digits}
 Numeric_real_const = {Numeric_real_fixed_point_const}
